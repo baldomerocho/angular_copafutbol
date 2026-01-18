@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
+import { BaseResponse } from './interfaces/base.interface';
 
 @Injectable({
     providedIn: 'root'
@@ -20,7 +21,7 @@ export class AuthService {
         return 'manager';
     }
 
-    login(credentials: any): Observable<any> {
+    login(credentials: any): Observable<BaseResponse<any>> {
         return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
             tap((response: any) => {
                 if (response.data && response.data.token) {
@@ -28,11 +29,11 @@ export class AuthService {
                     localStorage.setItem('user', JSON.stringify(response.data.user));
                 }
             })
-        );
+        ) as Observable<BaseResponse<any>>;
     }
 
-    register(userData: any): Observable<any> {
-        return this.http.post(`${this.apiUrl}/register`, userData);
+    register(userData: any): Observable<BaseResponse<any>> {
+        return this.http.post(`${this.apiUrl}/register`, userData) as Observable<BaseResponse<any>>;
     }
 
     logout() {

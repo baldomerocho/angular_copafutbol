@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
-
+import { BaseResponse } from './interfaces/base.interface';
 import { Field } from './interfaces/field.interface';
 
 @Injectable({
@@ -17,26 +17,26 @@ export class FieldService {
         private authService: AuthService
     ) { }
 
-    getFields(): Observable<any> {
-        return this.http.get(`${this.baseUrl}/public/fields`);
+    getFields(): Observable<BaseResponse<Field[]>> {
+        return this.http.get(`${this.baseUrl}/public/fields`) as Observable<BaseResponse<Field[]>>;
     }
 
-    getField(id: number): Observable<any> {
-        return this.http.get(`${this.baseUrl}/public/fields/${id}`);
+    getField(id: number): Observable<BaseResponse<Field>> {
+        return this.http.get(`${this.baseUrl}/public/fields/${id}`) as Observable<BaseResponse<Field>>;
     }
 
-    createField(field: Field): Observable<any> {
+    createField(field: Field): Observable<BaseResponse<Field>> {
         const prefix = this.authService.getRolePrefix();
-        return this.http.post(`${this.baseUrl}/${prefix}/fields`, field);
+        return this.http.post(`${this.baseUrl}/${prefix}/fields`, field) as Observable<BaseResponse<Field>>;
     }
 
-    updateField(id: number, field: Field): Observable<any> {
+    updateField(id: number, field: Field): Observable<BaseResponse<Field>> {
         const prefix = this.authService.getRolePrefix();
-        return this.http.put(`${this.baseUrl}/${prefix}/fields/${id}`, field);
+        return this.http.put(`${this.baseUrl}/${prefix}/fields/${id}`, field) as Observable<BaseResponse<Field>>;
     }
 
-    deleteField(id: number): Observable<any> {
+    deleteField(id: number): Observable<BaseResponse<any>> {
         const prefix = this.authService.getRolePrefix();
-        return this.http.delete(`${this.baseUrl}/${prefix}/fields/${id}`);
+        return this.http.delete(`${this.baseUrl}/${prefix}/fields/${id}`) as Observable<BaseResponse<any>>;
     }
 }

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-
+import { BaseResponse } from './interfaces/base.interface';
 import { CatalogItem, CatalogsMetadata } from './interfaces/catalog.interface';
 
 @Injectable({
@@ -16,14 +16,14 @@ export class CatalogService {
 
     constructor(private http: HttpClient) { }
 
-    fetchCatalogs(): Observable<any> {
+    fetchCatalogs(): Observable<BaseResponse<any>> {
         return this.http.get(`${this.baseUrl}/public/settings/catalogs`).pipe(
             tap((res: any) => {
                 if (res.data && res.data.metadata) {
                     this.catalogs.set(res.data.metadata);
                 }
             })
-        );
+        ) as Observable<BaseResponse<any>>;
     }
 
     getCatalog(key: keyof CatalogsMetadata): CatalogItem[] {
