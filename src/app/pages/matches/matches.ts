@@ -11,20 +11,21 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SelectModule } from 'primeng/select';
 import { DatePickerModule } from 'primeng/datepicker';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { FluidModule } from 'primeng/fluid';
 import { MatchService } from '../service/match.service';
 import { MatchResponse, MatchRequest, MatchUpdateRequest } from '../service/interfaces/match.interface';
 import { TournamentService } from '../service/tournament.service';
-import { Tournament } from '../service/interfaces/tournament.interface';
+import { TournamentResponse } from '../service/interfaces/tournament.interface';
 import { TeamService } from '../service/team.service';
-import { Team } from '../service/interfaces/team.interface';
+import { TeamResponse } from '../service/interfaces/team.interface';
 import { FieldService } from '../service/field.service';
-import { Field } from '../service/interfaces/field.interface';
+import { FieldResponse } from '../service/interfaces/field.interface';
 import { CatalogService } from '../service/catalog.service';
 
 @Component({
     selector: 'app-matches',
     standalone: true,
-    imports: [CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule, DialogModule, ToastModule, ToolbarModule, ConfirmDialogModule, SelectModule, DatePickerModule],
+    imports: [CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule, DialogModule, ToastModule, ToolbarModule, ConfirmDialogModule, SelectModule, DatePickerModule, FluidModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './matches.html',
     styleUrl: './matches.css'
@@ -36,9 +37,9 @@ export class Matches implements OnInit {
     loading: boolean = true;
     matchDate: Date = new Date();
 
-    tournaments: Tournament[] = [];
-    fields: Field[] = [];
-    teams: Team[] = [];
+    tournaments: TournamentResponse[] = [];
+    fields: FieldResponse[] = [];
+    teams: TeamResponse[] = [];
 
     constructor(
         private matchService: MatchService,

@@ -11,20 +11,21 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { SelectModule } from 'primeng/select';
 import { TournamentService } from '../service/tournament.service';
-import { Tournament } from '../service/interfaces/tournament.interface';
+import { TournamentResponse } from '../service/interfaces/tournament.interface';
 import { CatalogService } from '../service/catalog.service';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-tournaments',
     standalone: true,
-    imports: [CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule, DialogModule, ToastModule, ToolbarModule, ConfirmDialogModule, SelectModule],
+    imports: [CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule, ToastModule, ToolbarModule, ConfirmDialogModule, SelectModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './tournaments.html',
     styleUrl: './tournaments.css'
 })
 export class Tournaments implements OnInit {
-    tournaments: Tournament[] = [];
-    tournament: Tournament = { name: '' };
+    tournaments: TournamentResponse[] = [];
+    tournament: Partial<TournamentResponse> = { name: '' };
     tournamentDialog: boolean = false;
     loading: boolean = true;
 
@@ -32,7 +33,8 @@ export class Tournaments implements OnInit {
         private tournamentService: TournamentService,
         private catalogService: CatalogService,
         private messageService: MessageService,
-        private confirmationService: ConfirmationService
+        private confirmationService: ConfirmationService,
+        private router: Router
     ) { }
 
     ngOnInit() {
@@ -66,16 +68,14 @@ export class Tournaments implements OnInit {
     }
 
     openNew() {
-        this.tournament = { name: '' };
-        this.tournamentDialog = true;
+        this.router.navigate(['/pages/tournaments/new']);
     }
 
-    editTournament(tournament: Tournament) {
-        this.tournament = { ...tournament };
-        this.tournamentDialog = true;
+    editTournament(tournament: TournamentResponse) {
+        this.router.navigate(['/pages/tournaments/edit', tournament.id]);
     }
 
-    deleteTournament(tournament: Tournament) {
+    deleteTournament(tournament: TournamentResponse) {
         this.confirmationService.confirm({
             message: '¿Está seguro de que desea eliminar ' + tournament.name + '?',
             header: 'Confirmar',
@@ -87,31 +87,5 @@ export class Tournaments implements OnInit {
                 });
             }
         });
-    }
-
-    hideDialog() {
-        this.tournamentDialog = false;
-    }
-
-    saveTournament() {
-        if (this.tournament.name.trim()) {
-            if (this.tournament.id) {
-                this.tournamentService.updateTournament(this.tournament.id, this.tournament).subscribe({
-                    next: () => {
-                        this.messageService.add({ severity: 'success', summary: 'Torneo actualizado', detail: '' });
-                        this.loadTournaments();
-                        this.tournamentDialog = false;
-                    }
-                });
-            } else {
-                this.tournamentService.createTournament(this.tournament).subscribe({
-                    next: () => {
-                        this.messageService.add({ severity: 'success', summary: 'Torneo creado', detail: '' });
-                        this.loadTournaments();
-                        this.tournamentDialog = false;
-                    }
-                });
-            }
-        }
     }
 }

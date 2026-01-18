@@ -1,33 +1,32 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { BaseResponse } from './interfaces/base.interface';
-import { CatalogItem, CatalogsMetadata } from './interfaces/catalog.interface';
+import { CatalogsResponse, SimpleRelation, Metadata } from './interfaces/catalog.interface';
 
 @Injectable({
     providedIn: 'root'
 })
 export class CatalogService {
     private baseUrl = environment.apiUrl;
-
-    // Using signals for easy access to catalogs across the app
-    catalogs = signal<CatalogsMetadata | null>(null);
+    private catalogs = new BehaviorSubject<CatalogsResponse | null>(null);
 
     constructor(private http: HttpClient) { }
 
-    fetchCatalogs(): Observable<BaseResponse<any>> {
-        return this.http.get(`${this.baseUrl}/public/settings/catalogs`).pipe(
-            tap((res: any) => {
-                if (res.data && res.data.metadata) {
-                    this.catalogs.set(res.data.metadata);
-                }
-            })
-        ) as Observable<BaseResponse<any>>;
+    fetchCatalogs(): Observable<BaseResponse<Metadata<CatalogsResponse>>> {
+        const response = this.http.get(`${this.baseUrl}/public/settings/catalogs`) as Observable<BaseResponse<Metadata<CatalogsResponse>>>;
+        response.subscribe((res) => {
+            this.setCatalogs(res.data.metadata);
+        });
+        return response;
     }
 
-    getCatalog(key: keyof CatalogsMetadata): CatalogItem[] {
-        const current = this.catalogs();
-        return current ? current[key] : [];
+    setCatalogs(catalogs: CatalogsResponse) {
+        this.catalogs.next(catalogs);
+    }
+
+    getCatalog(key: keyof CatalogsResponse): SimpleRelation[] {
+        return this.catalogs.value ? this.catalogs.value[key] : [];
     }
 }

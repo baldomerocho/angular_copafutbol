@@ -40,44 +40,51 @@
 
 <p-confirmdialog [style]="{width: '450px'}"></p-confirmdialog>
 
-<p-dialog [(visible)]="matchDialog" [style]="{width: '500px'}" header="Detalles del Partido" [modal]="true"
-    class="p-fluid">
+<p-dialog [(visible)]="matchDialog" [style]="{width: '500px'}" header="Detalles del Partido" [modal]="true">
     <ng-template pTemplate="content">
-        <div class="field">
-            <label>Torneo</label>
-            <p-select [options]="tournaments" [(ngModel)]="match.tournament_id" optionLabel="name" optionValue="id"
-                placeholder="Selecciona Torneo" appendTo="body"></p-select>
-        </div>
-        <div class="field">
-            <label>Sede</label>
-            <p-select [options]="fields" [(ngModel)]="match.field_id" optionLabel="name" optionValue="id"
-                placeholder="Selecciona Sede" appendTo="body"></p-select>
-        </div>
-        <div class="grid">
-            <div class="col-6 field">
-                <label>Equipo Local</label>
-                <p-select [options]="teams" [(ngModel)]="match.home_team_id" optionLabel="name" optionValue="id"
-                    placeholder="Local" appendTo="body"></p-select>
+        <p-fluid>
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-col gap-2">
+                    <label class="font-bold text-sm text-surface-600 dark:text-surface-400">Torneo</label>
+                    <p-select [options]="tournaments" [(ngModel)]="match.tournament_id" optionLabel="name"
+                        optionValue="id" placeholder="Selecciona Torneo" appendTo="body"></p-select>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="font-bold text-sm text-surface-600 dark:text-surface-400">Sede</label>
+                    <p-select [options]="fields" [(ngModel)]="match.field_id" optionLabel="name" optionValue="id"
+                        placeholder="Selecciona Sede" appendTo="body"></p-select>
+                </div>
+
+                <div class="grid grid-cols-12 gap-4">
+                    <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
+                        <label class="font-bold text-sm text-surface-600 dark:text-surface-400">Equipo Local</label>
+                        <p-select [options]="teams" [(ngModel)]="match.home_team_id" optionLabel="name" optionValue="id"
+                            placeholder="Local" appendTo="body"></p-select>
+                    </div>
+                    <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
+                        <label class="font-bold text-sm text-surface-600 dark:text-surface-400">Equipo Visitante</label>
+                        <p-select [options]="teams" [(ngModel)]="match.away_team_id" optionLabel="name" optionValue="id"
+                            placeholder="Visitante" appendTo="body"></p-select>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-2">
+                    <label class="font-bold text-sm text-surface-600 dark:text-surface-400">Fecha y Hora</label>
+                    <p-datepicker [(ngModel)]="matchDate" [showTime]="true" [showIcon]="true" appendTo="body"
+                        dateFormat="yy-mm-dd"></p-datepicker>
+                </div>
+
+                <div class="flex flex-col gap-2" *ngIf="match.id">
+                    <label class="font-bold text-sm text-surface-600 dark:text-surface-400">Estado</label>
+                    <p-select [options]="statuses()" [(ngModel)]="match.status" optionLabel="name" optionValue="id"
+                        placeholder="Estado del Partido" appendTo="body"></p-select>
+                </div>
             </div>
-            <div class="col-6 field">
-                <label>Equipo Visitante</label>
-                <p-select [options]="teams" [(ngModel)]="match.away_team_id" optionLabel="name" optionValue="id"
-                    placeholder="Visitante" appendTo="body"></p-select>
-            </div>
-        </div>
-        <div class="field">
-            <label>Fecha y Hora</label>
-            <p-datepicker [(ngModel)]="matchDate" [showTime]="true" [showIcon]="true" appendTo="body"></p-datepicker>
-        </div>
-        <div class="field" *ngIf="match.id">
-            <label>Estado</label>
-            <p-select [options]="statuses()" [(ngModel)]="match.status" optionLabel="name" optionValue="id"
-                placeholder="Estado del Partido" appendTo="body"></p-select>
-        </div>
+        </p-fluid>
     </ng-template>
 
     <ng-template pTemplate="footer">
-        <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
-        <button pButton label="Guardar" icon="pi pi-check" class="p-button-text" (click)="saveMatch()"></button>
+        <p-button label="Cancelar" icon="pi pi-times" [text]="true" (click)="hideDialog()"></p-button>
+        <p-button label="Guardar" icon="pi pi-check" (click)="saveMatch()"></p-button>
     </ng-template>
 </p-dialog>

@@ -9,31 +9,77 @@ import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { FluidModule } from 'primeng/fluid';
 import { TeamService } from '../service/team.service';
-import { Team } from '../service/interfaces/team.interface';
+import { TeamResponse, TeamRequest, PlayerResponse } from '../service/interfaces/team.interface';
+import { AuthService } from '../service/auth.service';
+import { TournamentService } from '../service/tournament.service';
+import { UserService } from '../service/user.service';
+import { TournamentResponse } from '../service/interfaces/tournament.interface';
+import { UserResponse } from '../service/interfaces/user.interface';
+import { SelectModule } from 'primeng/select';
 
 @Component({
     selector: 'app-teams',
     standalone: true,
-    imports: [CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule, DialogModule, ToastModule, ToolbarModule, ConfirmDialogModule],
+    imports: [CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule, DialogModule, ToastModule, ToolbarModule, ConfirmDialogModule, FluidModule, SelectModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './teams.html',
     styleUrl: './teams.css'
 })
 export class Teams implements OnInit {
-    teams: Team[] = [];
-    team: Team = { name: '' };
+    teams: TeamResponse[] = [];
+    team: any = { name: '' };
     teamDialog: boolean = false;
     loading: boolean = true;
+    loadingExtra: boolean = false;
+
+    prefix: string = '';
+    tournaments: TournamentResponse[] = [];
+    managers: UserResponse[] = [];
+    players: PlayerResponse[] = [];
 
     constructor(
         private teamService: TeamService,
         private messageService: MessageService,
-        private confirmationService: ConfirmationService
+        private confirmationService: ConfirmationService,
+        private authService: AuthService,
+        private tournamentService: TournamentService,
+        private userService: UserService
     ) { }
 
     ngOnInit() {
         this.loadTeams();
+        this.prefix = this.authService.getRolePrefix();
+        if (this.prefix === 'admin' || this.prefix === 'staff') {
+            this.loadExtraData();
+        }
+    }
+
+    loadExtraData() {
+        this.loadingExtra = true;
+        this.tournamentService.getTournaments().subscribe({
+            next: (res) => {
+                this.tournaments = res.data || [];
+                this.checkExtraLoading();
+            },
+            error: () => this.checkExtraLoading()
+        });
+        this.userService.getUsers().subscribe({
+            next: (res) => {
+                this.managers = res.data || [];
+                this.checkExtraLoading();
+            },
+            error: () => this.checkExtraLoading()
+        });
+    }
+
+    private loadedCount = 0;
+    private checkExtraLoading() {
+        this.loadedCount++;
+        if (this.loadedCount >= 2) {
+            this.loadingExtra = false;
+        }
     }
 
     loadTeams() {
@@ -55,12 +101,12 @@ export class Teams implements OnInit {
         this.teamDialog = true;
     }
 
-    editTeam(team: Team) {
+    editTeam(team: TeamResponse) {
         this.team = { ...team };
         this.teamDialog = true;
     }
 
-    deleteTeam(team: Team) {
+    deleteTeam(team: TeamResponse) {
         this.confirmationService.confirm({
             message: '¿Está seguro de que desea eliminar ' + team.name + '?',
             header: 'Confirmar',
@@ -81,7 +127,12 @@ export class Teams implements OnInit {
     saveTeam() {
         if (this.team.name.trim()) {
             if (this.team.id) {
-                this.teamService.updateTeam(this.team.id, this.team).subscribe({
+                const request: TeamRequest = {
+                    name: this.team.name,
+                    tournament_id: this.team.tournament_id,
+                    manager_id: this.team.manager_id
+                };
+                this.teamService.updateTeam(this.team.id, request).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'Equipo actualizado', detail: '' });
                         this.loadTeams();
@@ -89,7 +140,12 @@ export class Teams implements OnInit {
                     }
                 });
             } else {
-                this.teamService.createTeam(this.team).subscribe({
+                const request: TeamRequest = {
+                    name: this.team.name,
+                    tournament_id: this.team.tournament_id,
+                    manager_id: this.team.manager_id
+                };
+                this.teamService.createTeam(request).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'Equipo creado', detail: '' });
                         this.loadTeams();

@@ -40,7 +40,8 @@ export class AppMenu {
                 label: 'Administración',
                 items: [
                     { label: 'Pagos', icon: 'pi pi-fw pi-money-bill', routerLink: ['/pages/payments'], roles: ['manager', 'staff', 'admin'] },
-                    { label: 'Usuarios', icon: 'pi pi-fw pi-user', routerLink: ['/pages/users'], roles: ['admin'] },
+                    { label: 'Usuarios / Gerentes', icon: 'pi pi-fw pi-user', routerLink: ['/pages/users'], roles: ['staff', 'admin'] },
+                    { label: 'Mi Perfil', icon: 'pi pi-fw pi-user-edit', routerLink: ['/pages/profile'] },
                     { label: 'Configuración', icon: 'pi pi-fw pi-cog', routerLink: ['/pages/settings'], roles: ['admin'] }
                 ]
             },

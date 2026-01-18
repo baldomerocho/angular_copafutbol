@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { BaseResponse } from './interfaces/base.interface';
+import { LoginRequest, LoginResponse, RegisterRequest } from './interfaces/auth.interface';
 
 @Injectable({
     providedIn: 'root'
@@ -14,14 +15,13 @@ export class AuthService {
     constructor(private http: HttpClient) { }
 
     getRolePrefix(): string {
-        console.log("ENV:: ", environment.production)
         const role = this.getUserRole();
         if (role === 'admin') return 'admin';
         if (role === 'staff') return 'staff';
         return 'manager';
     }
 
-    login(credentials: any): Observable<BaseResponse<any>> {
+    login(credentials: LoginRequest): Observable<BaseResponse<LoginResponse>> {
         return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
             tap((response: any) => {
                 if (response.data && response.data.token) {
@@ -29,10 +29,10 @@ export class AuthService {
                     localStorage.setItem('user', JSON.stringify(response.data.user));
                 }
             })
-        ) as Observable<BaseResponse<any>>;
+        ) as Observable<BaseResponse<LoginResponse>>;
     }
 
-    register(userData: any): Observable<BaseResponse<any>> {
+    register(userData: RegisterRequest): Observable<BaseResponse<any>> {
         return this.http.post(`${this.apiUrl}/register`, userData) as Observable<BaseResponse<any>>;
     }
 

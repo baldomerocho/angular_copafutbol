@@ -9,20 +9,21 @@ import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { FluidModule } from 'primeng/fluid';
 import { FieldService } from '../service/field.service';
-import { Field } from '../service/interfaces/field.interface';
+import { FieldResponse, FieldRequest } from '../service/interfaces/field.interface';
 
 @Component({
     selector: 'app-fields',
     standalone: true,
-    imports: [CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule, DialogModule, ToastModule, ToolbarModule, ConfirmDialogModule],
+    imports: [CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule, DialogModule, ToastModule, ToolbarModule, ConfirmDialogModule, FluidModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './fields.html',
     styleUrl: './fields.css'
 })
 export class Fields implements OnInit {
-    fields: Field[] = [];
-    field: Field = { name: '' };
+    fields: FieldResponse[] = [];
+    field: any = { name: '', location: '', capacity: undefined };
     fieldDialog: boolean = false;
     loading: boolean = true;
 
@@ -55,12 +56,12 @@ export class Fields implements OnInit {
         this.fieldDialog = true;
     }
 
-    editField(field: Field) {
+    editField(field: FieldResponse) {
         this.field = { ...field };
         this.fieldDialog = true;
     }
 
-    deleteField(field: Field) {
+    deleteField(field: FieldResponse) {
         this.confirmationService.confirm({
             message: '¿Está seguro de que desea eliminar ' + field.name + '?',
             header: 'Confirmar',
@@ -80,8 +81,13 @@ export class Fields implements OnInit {
 
     saveField() {
         if (this.field.name.trim()) {
+            const request: FieldRequest = {
+                name: this.field.name,
+                location: this.field.location,
+                capacity: this.field.capacity
+            };
             if (this.field.id) {
-                this.fieldService.updateField(this.field.id, this.field).subscribe({
+                this.fieldService.updateField(this.field.id, request).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'Sede actualizada', detail: '' });
                         this.loadFields();
@@ -89,7 +95,7 @@ export class Fields implements OnInit {
                     }
                 });
             } else {
-                this.fieldService.createField(this.field).subscribe({
+                this.fieldService.createField(request).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'Sede creada', detail: '' });
                         this.loadFields();

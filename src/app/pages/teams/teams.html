@@ -11,14 +11,16 @@
         <ng-template pTemplate="header">
             <tr>
                 <th>Nombre</th>
-                <th>Descripción</th>
+                <th>Torneo</th>
+                <th>Entrenador</th>
                 <th>Acciones</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-team>
             <tr>
                 <td>{{team.name}}</td>
-                <td>{{team.description}}</td>
+                <td>{{team.tournament?.name}}</td>
+                <td>{{team.manager?.name}}</td>
                 <td>
                     <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
                         (click)="editTeam(team)"></button>
@@ -32,21 +34,36 @@
 
 <p-confirmdialog [style]="{width: '450px'}"></p-confirmdialog>
 
-<p-dialog [(visible)]="teamDialog" [style]="{width: '450px'}" header="Detalles del Equipo" [modal]="true"
-    class="p-fluid">
+<p-dialog [(visible)]="teamDialog" [style]="{width: '450px'}" header="Detalles del Equipo" [modal]="true">
     <ng-template pTemplate="content">
-        <div class="field">
-            <label for="name">Nombre</label>
-            <input type="text" pInputText id="name" [(ngModel)]="team.name" required autofocus />
-        </div>
-        <div class="field">
-            <label for="description">Descripción</label>
-            <input type="text" pInputText id="description" [(ngModel)]="team.description" />
-        </div>
+        <p-fluid>
+            <div class="flex flex-col gap-4">
+                <div class="flex flex-col gap-2">
+                    <label for="name" class="font-bold">Nombre</label>
+                    <input type="text" pInputText id="name" [(ngModel)]="team.name" required autofocus />
+                </div>
+                <div *ngIf="prefix === 'admin' || prefix === 'staff'" class="flex flex-col gap-2">
+                    <label for="tournament_id" class="font-bold">Torneo</label>
+                    <p-select [options]="tournaments" optionLabel="name" optionValue="id"
+                        [(ngModel)]="team.tournament_id" placeholder="Seleccione un torneo" [appendTo]="'body'"
+                        [loading]="loadingExtra" />
+                </div>
+                <div *ngIf="prefix === 'admin' || prefix === 'staff'" class="flex flex-col gap-2">
+                    <label for="manager_id" class="font-bold">Entrenador</label>
+                    <p-select [options]="managers" optionLabel="name" optionValue="id" [(ngModel)]="team.manager_id"
+                        placeholder="Seleccione un entrenador" [appendTo]="'body'" [loading]="loadingExtra" />
+                </div>
+            </div>
+            <div *ngIf="prefix === 'admin' || prefix === 'staff'" class="flex flex-col gap-2">
+                <label for="players" class="font-bold">Jugadores</label>
+                <p-select [options]="players" optionLabel="name" optionValue="id" [(ngModel)]="team.players"
+                    placeholder="Seleccione jugadores" [appendTo]="'body'" [loading]="loadingExtra" />
+            </div>
+        </p-fluid>
     </ng-template>
 
     <ng-template pTemplate="footer">
-        <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
-        <button pButton label="Guardar" icon="pi pi-check" class="p-button-text" (click)="saveTeam()"></button>
+        <p-button label="Cancelar" icon="pi pi-times" [text]="true" (click)="hideDialog()"></p-button>
+        <p-button label="Guardar" icon="pi pi-check" (click)="saveTeam()"></p-button>
     </ng-template>
 </p-dialog>

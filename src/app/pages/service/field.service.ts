@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AuthService } from './auth.service';
 import { BaseResponse } from './interfaces/base.interface';
-import { Field } from './interfaces/field.interface';
+import { FieldResponse, FieldRequest } from './interfaces/field.interface';
 
 @Injectable({
     providedIn: 'root'
@@ -17,22 +17,22 @@ export class FieldService {
         private authService: AuthService
     ) { }
 
-    getFields(): Observable<BaseResponse<Field[]>> {
-        return this.http.get(`${this.baseUrl}/public/fields`) as Observable<BaseResponse<Field[]>>;
+    getFields(): Observable<BaseResponse<FieldResponse[]>> {
+        return this.http.get(`${this.baseUrl}/public/fields`) as Observable<BaseResponse<FieldResponse[]>>;
     }
 
-    getField(id: number): Observable<BaseResponse<Field>> {
-        return this.http.get(`${this.baseUrl}/public/fields/${id}`) as Observable<BaseResponse<Field>>;
+    getField(id: number): Observable<BaseResponse<FieldResponse>> {
+        return this.http.get(`${this.baseUrl}/public/fields/${id}`) as Observable<BaseResponse<FieldResponse>>;
     }
 
-    createField(field: Field): Observable<BaseResponse<Field>> {
+    createField(field: FieldRequest): Observable<BaseResponse<FieldResponse>> {
         const prefix = this.authService.getRolePrefix();
-        return this.http.post(`${this.baseUrl}/${prefix}/fields`, field) as Observable<BaseResponse<Field>>;
+        return this.http.post(`${this.baseUrl}/${prefix}/fields`, field) as Observable<BaseResponse<FieldResponse>>;
     }
 
-    updateField(id: number, field: Field): Observable<BaseResponse<Field>> {
+    updateField(id: number, field: FieldRequest): Observable<BaseResponse<FieldResponse>> {
         const prefix = this.authService.getRolePrefix();
-        return this.http.put(`${this.baseUrl}/${prefix}/fields/${id}`, field) as Observable<BaseResponse<Field>>;
+        return this.http.put(`${this.baseUrl}/${prefix}/fields/${id}`, field) as Observable<BaseResponse<FieldResponse>>;
     }
 
     deleteField(id: number): Observable<BaseResponse<any>> {

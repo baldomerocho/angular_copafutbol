@@ -12,19 +12,20 @@ import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { DatePickerModule } from 'primeng/datepicker';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { FluidModule } from 'primeng/fluid';
 import { PaymentService } from '../service/payment.service';
 import { PaymentResponse, PaymentRequest } from '../service/interfaces/payment.interface';
 import { AuthService } from '../service/auth.service';
 import { TournamentService } from '../service/tournament.service';
-import { Tournament } from '../service/interfaces/tournament.interface';
+import { TournamentResponse } from '../service/interfaces/tournament.interface';
 import { TeamService } from '../service/team.service';
-import { Team } from '../service/interfaces/team.interface';
+import { TeamResponse } from '../service/interfaces/team.interface';
 import { CatalogService } from '../service/catalog.service';
 
 @Component({
     selector: 'app-payments',
     standalone: true,
-    imports: [CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule, DialogModule, ToastModule, ToolbarModule, ConfirmDialogModule, SelectModule, TagModule, DatePickerModule,],
+    imports: [CommonModule, FormsModule, TableModule, ButtonModule, InputTextModule, DialogModule, ToastModule, ToolbarModule, ConfirmDialogModule, SelectModule, TagModule, DatePickerModule, FluidModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './payments.html',
     styleUrl: './payments.css'
@@ -38,8 +39,8 @@ export class Payments implements OnInit {
     paymentDate: Date = new Date();
     userRole: string = '';
 
-    tournaments: Tournament[] = [];
-    teams: Team[] = [];
+    tournaments: TournamentResponse[] = [];
+    teams: TeamResponse[] = [];
 
     constructor(
         private paymentService: PaymentService,
@@ -109,10 +110,12 @@ export class Payments implements OnInit {
     }
 
     paymentTypes() {
+        console.log(this.catalogService.getCatalog('payment_types'));
         return this.catalogService.getCatalog('payment_types');
     }
 
     paymentStatuses() {
+        console.log(this.catalogService.getCatalog('payment_statuses'));
         return this.catalogService.getCatalog('payment_statuses');
     }
 

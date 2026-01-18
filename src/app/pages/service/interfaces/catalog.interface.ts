@@ -1,15 +1,18 @@
-export interface CatalogItem {
+export interface SimpleRelation {
     id: string;
     name: string;
 }
 
-export interface CatalogsMetadata {
-    match_event_types: CatalogItem[];
-    match_stages: CatalogItem[];
-    match_statuses: CatalogItem[];
-    payment_statuses: CatalogItem[];
-    payment_types: CatalogItem[];
-    tournament_statuses: CatalogItem[];
-    tournament_types: CatalogItem[];
-    user_roles: CatalogItem[];
+export interface Metadata<CatalogsResponse> {
+    metadata: CatalogsResponse
+}
+
+export interface CatalogsResponse {
+    tournament_statuses: SimpleRelation[];
+    tournament_types: SimpleRelation[];
+    match_statuses: SimpleRelation[];
+    match_event_types: SimpleRelation[];
+    payment_statuses: SimpleRelation[];
+    payment_types: SimpleRelation[];
+    user_roles: SimpleRelation[];
 }

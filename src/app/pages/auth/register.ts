@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { FluidModule } from 'primeng/fluid';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -16,7 +17,7 @@ import { CommonModule } from '@angular/common';
 @Component({
     selector: 'app-register',
     standalone: true,
-    imports: [ButtonModule, InputTextModule, PasswordModule, FormsModule, RouterModule, RippleModule, AppFloatingConfigurator, ToastModule, CommonModule, SelectModule],
+    imports: [ButtonModule, InputTextModule, PasswordModule, FormsModule, RouterModule, RippleModule, AppFloatingConfigurator, ToastModule, CommonModule, SelectModule, FluidModule],
     templateUrl: './register.html',
     styleUrl: './register.css'
 })

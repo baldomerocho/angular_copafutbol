@@ -14,7 +14,7 @@
                 <th>Ubicación</th>
                 <th>Precio</th>
                 <th>Estado</th>
-                <th>Acciones</th>
+                <th style="width: 10rem">Acciones</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-tournament>
@@ -35,42 +35,3 @@
 </div>
 
 <p-confirmdialog [style]="{width: '450px'}"></p-confirmdialog>
-
-<p-dialog [(visible)]="tournamentDialog" [style]="{width: '450px'}" header="Detalles del Torneo" [modal]="true"
-    class="p-fluid">
-    <ng-template pTemplate="content">
-        <div class="field">
-            <label for="name">Nombre</label>
-            <input type="text" pInputText id="name" [(ngModel)]="tournament.name" required autofocus />
-        </div>
-        <div class="field">
-            <label for="description">Descripción</label>
-            <input type="text" pInputText id="description" [(ngModel)]="tournament.description" />
-        </div>
-        <div class="field">
-            <label for="location">Ubicación</label>
-            <input type="text" pInputText id="location" [(ngModel)]="tournament.location" />
-        </div>
-        <div class="grid">
-            <div class="col-6 field">
-                <label for="price">Precio Inscripción</label>
-                <input type="number" pInputText id="price" [(ngModel)]="tournament.enrollment_price" />
-            </div>
-            <div class="col-6 field">
-                <label>Tipo</label>
-                <p-select [options]="types()" [(ngModel)]="tournament.status" optionLabel="name" optionValue="id"
-                    placeholder="Tipo" appendTo="body"></p-select>
-            </div>
-        </div>
-        <div class="field" *ngIf="tournament.id">
-            <label>Estado</label>
-            <p-select [options]="statuses()" [(ngModel)]="tournament.status" optionLabel="name" optionValue="id"
-                placeholder="Estado" appendTo="body"></p-select>
-        </div>
-    </ng-template>
-
-    <ng-template pTemplate="footer">
-        <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
-        <button pButton label="Guardar" icon="pi pi-check" class="p-button-text" (click)="saveTournament()"></button>
-    </ng-template>
-</p-dialog>

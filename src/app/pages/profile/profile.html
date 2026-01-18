@@ -1,0 +1,54 @@
+<p-toast></p-toast>
+
+<div class="grid grid-cols-12 gap-4">
+    <div class="col-span-12 lg:col-span-6">
+        <p-card header="Mi Perfil" subheader="Actualiza tu información personal">
+            <p-fluid>
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
+                        <label for="name" class="font-bold">Nombre Completo</label>
+                        <input pInputText id="name" [(ngModel)]="profileData.name" placeholder="Tu nombre" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label for="email" class="font-bold">Correo Electrónico</label>
+                        <input pInputText id="email" type="email" [(ngModel)]="profileData.email"
+                            placeholder="Tu correo" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="font-bold">Rol actual</label>
+                        <input pInputText [value]="user.role" [disabled]="true"
+                            class="bg-surface-100 dark:bg-surface-800" />
+                        <small class="text-surface-500">Tu rol es asignado por el administrador.</small>
+                    </div>
+                    <div class="mt-4">
+                        <p-button label="Actualizar Perfil" icon="pi pi-check" [loading]="loadingProfile"
+                            (onClick)="onUpdateProfile()"></p-button>
+                    </div>
+                </div>
+            </p-fluid>
+        </p-card>
+    </div>
+
+    <div class="col-span-12 lg:col-span-6">
+        <p-card header="Cambiar Contraseña" subheader="Asegura tu cuenta con una nueva contraseña">
+            <p-fluid>
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
+                        <label for="password" class="font-bold">Nueva Contraseña</label>
+                        <p-password id="password" [(ngModel)]="passwordData.password" [toggleMask]="true"
+                            placeholder="Nueva contraseña" [feedback]="false"></p-password>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label for="confirm" class="font-bold">Confirmar Contraseña</label>
+                        <p-password id="confirm" [(ngModel)]="confirmPassword" [toggleMask]="true"
+                            placeholder="Repite la contraseña" [feedback]="false"></p-password>
+                    </div>
+                    <div class="mt-4">
+                        <p-button label="Cambiar Contraseña" icon="pi pi-key" severity="warn"
+                            [loading]="loadingPassword" (onClick)="onUpdatePassword()"></p-button>
+                    </div>
+                </div>
+            </p-fluid>
+        </p-card>
+    </div>
+</div>

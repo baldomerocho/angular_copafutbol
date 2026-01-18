@@ -1,3 +1,93 @@
+.auth-container {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://files.server.gt/publicos/auth-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-image 0.3s ease;
+}
+
+:host-context(.app-dark) .auth-container,
+:host-context(.dark) .auth-container {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('https://files.server.gt/publicos/auth-bg.jpg');
+}
+
+.glass-card {
+    background: rgba(255, 255, 255, 1.0);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 550px;
+    margin: 1rem;
+    color: var(--text-color);
+}
+
+:host-context(.app-dark) .glass-card,
+:host-context(.dark) .glass-card {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8) !important;
+    color: #fff !important;
+}
+
+:host ::ng-deep .p-inputtext,
+:host ::ng-deep .p-select {
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+:host-context(.app-dark) ::ng-deep .p-inputtext,
+:host-context(.dark) ::ng-deep .p-inputtext,
+:host-context(.app-dark) ::ng-deep .p-select,
+:host-context(.dark) ::ng-deep .p-select {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+:host ::ng-deep .p-select .p-select-label {
+    color: inherit;
+}
+
+:host ::ng-deep .p-password input {
+    width: 100%;
+}
+
+.auth-title {
+    color: inherit;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+    letter-spacing: -1px;
+}
+
+.auth-subtitle {
+    color: var(--text-color-secondary);
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+:host-context(.app-dark) .auth-subtitle,
+:host-context(.dark) .auth-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.auth-label {
+    color: inherit;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    display: block;
+}
+
 :host ::ng-deep .pi-user-plus {
-    font-size: 4rem;
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
 }
