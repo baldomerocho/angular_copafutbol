@@ -9,7 +9,7 @@ import { tap } from 'rxjs/operators';
 export class AuthService {
     private apiUrl = 'https://app-dev-clubfutbol.server.gt';
 
-    constructor(private http: HttpClient) {}
+    constructor(private http: HttpClient) { }
 
     login(credentials: any): Observable<any> {
         return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
@@ -42,5 +42,27 @@ export class AuthService {
 
     isLoggedIn(): boolean {
         return !!this.getToken();
+    }
+
+    getUserRole(): string | null {
+        const token = this.getToken();
+        if (!token) return null;
+
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.role || null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    hasRole(requiredRoles: string | string[]): boolean {
+        const userRole = this.getUserRole();
+        if (!userRole) return false;
+
+        if (Array.isArray(requiredRoles)) {
+            return requiredRoles.includes(userRole);
+        }
+        return userRole === requiredRoles;
     }
 }

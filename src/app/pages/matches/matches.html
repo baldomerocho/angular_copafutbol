@@ -1,0 +1,83 @@
+<p-toast></p-toast>
+<div class="card">
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="left">
+            <button pButton label="Programar Partido" icon="pi pi-calendar-plus" class="p-button-success mr-2"
+                (click)="openNew()"></button>
+        </ng-template>
+    </p-toolbar>
+
+    <p-table [value]="matches" [rows]="10" [paginator]="true" responsiveLayout="scroll" [loading]="loading">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Fecha</th>
+                <th>Torneo</th>
+                <th>Local</th>
+                <th>Visitante</th>
+                <th>Sede</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-match>
+            <tr>
+                <td>{{match.match_date | date:'short'}}</td>
+                <td>{{getTournamentName(match.tournament_id)}}</td>
+                <td>{{getTeamName(match.local_team_id)}}</td>
+                <td>{{getTeamName(match.visitor_team_id)}}</td>
+                <td>{{getFieldName(match.field_id)}}</td>
+                <td>{{getStatusName(match.status)}}</td>
+                <td>
+                    <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
+                        (click)="editMatch(match)"></button>
+                    <button pButton icon="pi pi-trash" class="p-button-rounded p-button-warning"
+                        (click)="deleteMatch(match)"></button>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-confirmdialog [style]="{width: '450px'}"></p-confirmdialog>
+
+<p-dialog [(visible)]="matchDialog" [style]="{width: '500px'}" header="Detalles del Partido" [modal]="true"
+    class="p-fluid">
+    <ng-template pTemplate="content">
+        <div class="field">
+            <label>Torneo</label>
+            <p-select [options]="tournaments" [(ngModel)]="match.tournament_id" optionLabel="name" optionValue="id"
+                placeholder="Selecciona Torneo"></p-select>
+        </div>
+        <div class="field">
+            <label>Sede</label>
+            <p-select [options]="fields" [(ngModel)]="match.field_id" optionLabel="name" optionValue="id"
+                placeholder="Selecciona Sede"></p-select>
+        </div>
+        <div class="grid">
+            <div class="col-6 field">
+                <label>Equipo Local</label>
+                <p-select [options]="teams" [(ngModel)]="match.local_team_id" optionLabel="name" optionValue="id"
+                    placeholder="Local"></p-select>
+            </div>
+            <div class="col-6 field">
+                <label>Equipo Visitante</label>
+                <p-select [options]="teams" [(ngModel)]="match.visitor_team_id" optionLabel="name" optionValue="id"
+                    placeholder="Visitante"></p-select>
+            </div>
+        </div>
+        <div class="field">
+            <label>Fecha y Hora</label>
+            <p-datepicker [(ngModel)]="matchDate" [showTime]="true" [showIcon]="true" appendTo="body"></p-datepicker>
+        </div>
+        <div class="field" *ngIf="match.id">
+            <label>Estado</label>
+            <p-select [options]="statuses()" [(ngModel)]="match.status" optionLabel="name" optionValue="id"
+                placeholder="Estado del Partido"></p-select>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+        <button pButton label="Guardar" icon="pi pi-check" class="p-button-text" (click)="saveMatch()"></button>
+    </ng-template>
+</p-dialog>

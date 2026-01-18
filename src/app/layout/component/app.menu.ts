@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
+import { AuthService } from '../../pages/service/auth.service';
 
 @Component({
     selector: 'app-menu',
@@ -18,8 +19,10 @@ import { AppMenuitem } from './app.menuitem';
 export class AppMenu {
     model: MenuItem[] = [];
 
+    constructor(private authService: AuthService) { }
+
     ngOnInit() {
-        this.model = [
+        const fullModel: any[] = [
             {
                 label: 'Principal',
                 items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/'] }]
@@ -27,27 +30,32 @@ export class AppMenu {
             {
                 label: 'Gestión de Torneo',
                 items: [
-                    { label: 'Torneos', icon: 'pi pi-fw pi-trophy', routerLink: ['/pages/tournaments'] },
-                    { label: 'Equipos', icon: 'pi pi-fw pi-users', routerLink: ['/pages/teams'] },
-                    { label: 'Partidos', icon: 'pi pi-fw pi-calendar', routerLink: ['/pages/matches'] },
-                    { label: 'Sedes/Campos', icon: 'pi pi-fw pi-map-marker', routerLink: ['/pages/fields'] }
+                    { label: 'Torneos', icon: 'pi pi-fw pi-trophy', routerLink: ['/pages/tournaments'], roles: ['staff', 'admin'] },
+                    { label: 'Equipos', icon: 'pi pi-fw pi-users', routerLink: ['/pages/teams'], roles: ['manager', 'staff', 'admin'] },
+                    { label: 'Partidos', icon: 'pi pi-fw pi-calendar', routerLink: ['/pages/matches'], roles: ['staff', 'admin'] },
+                    { label: 'Sedes/Campos', icon: 'pi pi-fw pi-map-marker', routerLink: ['/pages/fields'], roles: ['staff', 'admin'] }
                 ]
             },
             {
                 label: 'Administración',
                 items: [
-                    { label: 'Pagos', icon: 'pi pi-fw pi-money-bill', routerLink: ['/pages/payments'] },
-                    { label: 'Usuarios', icon: 'pi pi-fw pi-user', routerLink: ['/pages/users'] },
-                    { label: 'Configuración', icon: 'pi pi-fw pi-cog', routerLink: ['/pages/settings'] }
+                    { label: 'Pagos', icon: 'pi pi-fw pi-money-bill', routerLink: ['/pages/payments'], roles: ['manager', 'staff', 'admin'] },
+                    { label: 'Usuarios', icon: 'pi pi-fw pi-user', routerLink: ['/pages/users'], roles: ['admin'] },
+                    { label: 'Configuración', icon: 'pi pi-fw pi-cog', routerLink: ['/pages/settings'], roles: ['admin'] }
                 ]
             },
             {
                 label: 'Utilidades UI',
                 items: [
-                    { label: 'Componentes', icon: 'pi pi-fw pi-palette', routerLink: ['/uikit/formlayout'] },
-                    { label: 'Documentación', icon: 'pi pi-fw pi-book', routerLink: ['/documentation'] }
+                    { label: 'Componentes', icon: 'pi pi-fw pi-palette', routerLink: ['/uikit/formlayout'], roles: ['admin'] },
+                    { label: 'Documentación', icon: 'pi pi-fw pi-book', routerLink: ['/documentation'], roles: ['admin'] }
                 ]
             }
         ];
+
+        this.model = fullModel.map(section => ({
+            ...section,
+            items: section.items?.filter((item: any) => !item.roles || this.authService.hasRole(item.roles))
+        })).filter(section => section.items && section.items.length > 0);
     }
 }

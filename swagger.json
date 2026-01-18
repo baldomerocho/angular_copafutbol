@@ -1,0 +1,2724 @@
+{
+    "schemes": [],
+    "swagger": "2.0",
+    "info": {
+        "description": "API for managing football tournaments.",
+        "title": "Copafutbol API",
+        "termsOfService": "http://swagger.io/terms/",
+        "contact": {
+            "name": "API Support",
+            "url": "http://www.swagger.io/support",
+            "email": "support@swagger.io"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8022",
+    "basePath": "/",
+    "paths": {
+        "/admin/audit-logs": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Retrieve system-wide audit logs (Admin only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Get all audit logs",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_AuditLogResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/fields": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Register a new venue/field (Admin/Staff only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "fields"
+                ],
+                "summary": "Create a field",
+                "parameters": [
+                    {
+                        "description": "Field data",
+                        "name": "field",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.FieldRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_FieldResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/settings": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get a list of all system and provider configurations (Admin only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "settings"
+                ],
+                "summary": "Get all system settings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_SettingResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create or update a system configuration (Admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "settings"
+                ],
+                "summary": "Create or update a setting",
+                "parameters": [
+                    {
+                        "description": "Setting data",
+                        "name": "setting",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.SettingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_SettingResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/settings/{key}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get specific configuration (Admin only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "settings"
+                ],
+                "summary": "Get setting detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Setting key",
+                        "name": "key",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_SettingResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/tournaments": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new tournament (Admin/Staff only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tournaments"
+                ],
+                "summary": "Create a tournament",
+                "parameters": [
+                    {
+                        "description": "Tournament data",
+                        "name": "tournament",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_TournamentResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/tournaments/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a tournament (Admin only)",
+                "tags": [
+                    "tournaments"
+                ],
+                "summary": "Delete a tournament",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Tournament ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/admin/tournaments/{id}/generate-fixtures": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Automatically generate match schedule (Admin/Staff only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tournaments"
+                ],
+                "summary": "Generate tournament fixtures",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Tournament ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-string"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/tournaments/{id}/generate-knockout": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create brackets based on group stage results (Admin/Staff only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tournaments"
+                ],
+                "summary": "Generate knockout brackets",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Tournament ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-string"
+                        }
+                    }
+                }
+            }
+        },
+        "/admin/tournaments/{id}/groups": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new group and assign teams (Admin/Staff only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tournaments"
+                ],
+                "summary": "Create a tournament group",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Tournament ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Group data",
+                        "name": "group",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentGroupResponse"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_TournamentGroupResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/login": {
+            "post": {
+                "description": "Authenticate a user and return a JWT token",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login a user",
+                "parameters": [
+                    {
+                        "description": "Login data",
+                        "name": "login",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handlers.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_LoginResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/manager/matches/{id}/teams/{team_id}/lineup": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Managers can define positions for their players in a specific match",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "matches"
+                ],
+                "summary": "Set player position for a match",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Match ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Team ID",
+                        "name": "team_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Lineup data",
+                        "name": "lineup",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.LineupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-string"
+                        }
+                    }
+                }
+            }
+        },
+        "/manager/payments": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List payments based on user role",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payments"
+                ],
+                "summary": "List all payments",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_PaymentResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new payment record (Manager only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payments"
+                ],
+                "summary": "Register a payment",
+                "parameters": [
+                    {
+                        "description": "Payment data",
+                        "name": "payment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PaymentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PaymentResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/manager/teams": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get all teams managed by the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "teams"
+                ],
+                "summary": "List manager's teams",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_TeamResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new team managed by the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "teams"
+                ],
+                "summary": "Create a team",
+                "parameters": [
+                    {
+                        "description": "Team data",
+                        "name": "team",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TeamRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_TeamResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/manager/teams/{id}/enroll": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Enroll a team in a tournament. Validates payments unless 'allow_late_payment' is enabled in the tournament.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "teams"
+                ],
+                "summary": "Enroll team in a tournament",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Team ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Tournament ID",
+                        "name": "tournament_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_TeamResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/manager/teams/{id}/players": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Add a new player to a managed team",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "teams"
+                ],
+                "summary": "Add a player to a team",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Team ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Player data",
+                        "name": "player",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/fields": {
+            "get": {
+                "description": "Get all registered venues",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "fields"
+                ],
+                "summary": "List all fields",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_FieldResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/matches": {
+            "get": {
+                "description": "Get a list of matches with optional filters",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "matches"
+                ],
+                "summary": "List matches",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Tournament ID",
+                        "name": "tournament_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Team ID",
+                        "name": "team_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_MatchResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/matches/{id}": {
+            "get": {
+                "description": "Get full details of a match including events and lineups",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "matches"
+                ],
+                "summary": "Get match details",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Match ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_MatchDetailsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/settings/app": {
+            "get": {
+                "description": "Get branding, logo and currency settings",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "settings"
+                ],
+                "summary": "Get public application configuration",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_SettingAppPublicResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/settings/catalogs": {
+            "get": {
+                "description": "Get branding, logo and currency settings",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "settings"
+                ],
+                "summary": "Get public application configuration",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_SettingAppPublicResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/teams/{id}/players": {
+            "get": {
+                "description": "List all players of a specific team",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "teams"
+                ],
+                "summary": "Get players of a team",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Team ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/tournaments": {
+            "get": {
+                "description": "Get a list of all tournaments with their teams and extra prices",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tournaments"
+                ],
+                "summary": "Get all tournaments",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_TournamentResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/tournaments/{id}": {
+            "get": {
+                "description": "Get details of a single tournament",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tournaments"
+                ],
+                "summary": "Get tournament by ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Tournament ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_TournamentResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/tournaments/{id}/groups": {
+            "get": {
+                "description": "Get all groups for a tournament",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tournaments"
+                ],
+                "summary": "List tournament groups",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Tournament ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_TournamentGroupResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/tournaments/{id}/player-stats": {
+            "get": {
+                "description": "Get top scorers and card leaders for a tournament",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tournaments"
+                ],
+                "summary": "Get player statistics",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Tournament ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerStatsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/tournaments/{id}/standings": {
+            "get": {
+                "description": "Calculate and return the standings table for a tournament",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tournaments"
+                ],
+                "summary": "Get tournament standings",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Tournament ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_StandingsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/register": {
+            "post": {
+                "description": "Register a new user with name, email, password and role",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Register a new user",
+                "parameters": [
+                    {
+                        "description": "Register data",
+                        "name": "register",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handlers.RegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_UserResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/matches": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a new match record (Admin/Staff only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "matches"
+                ],
+                "summary": "Schedule a match",
+                "parameters": [
+                    {
+                        "description": "Match data",
+                        "name": "match",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.MatchRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_MatchResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/matches/{id}": {
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update score, status, or times (Staff/Admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "matches"
+                ],
+                "summary": "Update match details",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Match ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update data",
+                        "name": "match",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.MatchUpdateRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_MatchResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/matches/{id}/events": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Register a goal, card, foul or fine (Staff only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "matches"
+                ],
+                "summary": "Register a match event",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Match ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Event data",
+                        "name": "event",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.MatchEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_MatchEventResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/payments/{id}/status": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update the status of a payment (Admin/Staff only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payments"
+                ],
+                "summary": "Update payment status",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Payment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Status update",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/internal_api_handlers.UpdatePaymentStatusRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PaymentResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/teams/monitoring": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Get a dashboard of all enrolled teams with their payment progress (Admin/Staff only)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "teams"
+                ],
+                "summary": "Monitor enrolled teams and payments",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Filter by Tournament ID",
+                        "name": "tournament_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Show only teams with missing payments",
+                        "name": "missing_only",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_MonitoringTeamStatus"
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/tournaments/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update an existing tournament (Admin/Staff only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tournaments"
+                ],
+                "summary": "Update a tournament",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Tournament ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Tournament update data",
+                        "name": "tournament",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_TournamentResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.AuditLogResponse": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "entity": {
+                    "type": "string"
+                },
+                "entity_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "new_value": {
+                    "type": "string"
+                },
+                "old_value": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "string"
+                },
+                "user_email": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_AuditLogResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.AuditLogResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_FieldResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.FieldResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_MatchResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.MatchResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_MonitoringTeamStatus": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.MonitoringTeamStatus"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_PaymentResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PaymentResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerStatsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerStatsResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_SettingResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.SettingResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_TeamResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TeamResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_TournamentGroupResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentGroupResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_TournamentResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_FieldResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.FieldResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_LoginResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.LoginResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_MatchDetailsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.MatchDetailsResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_MatchEventResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.MatchEventResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_MatchResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.MatchResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PaymentResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PaymentResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_SettingAppPublicResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.SettingAppPublicResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_SettingResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.SettingResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_StandingsResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.StandingsResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_TeamResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TeamResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_TournamentGroupResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentGroupResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_TournamentResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_UserResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.UserResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-string": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.FieldRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "capacity": {
+                    "type": "integer",
+                    "example": 500
+                },
+                "location": {
+                    "type": "string",
+                    "example": "North Wing"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Main Stadium"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.FieldResponse": {
+            "type": "object",
+            "properties": {
+                "capacity": {
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.LineupRequest": {
+            "type": "object",
+            "required": [
+                "player_id",
+                "position"
+            ],
+            "properties": {
+                "player_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "position": {
+                    "type": "string",
+                    "example": "Goalkeeper"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.LineupResponse": {
+            "type": "object",
+            "properties": {
+                "player_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "player_name": {
+                    "type": "string",
+                    "example": "Cristiano Ronaldo"
+                },
+                "position": {
+                    "type": "string",
+                    "example": "Goalkeeper"
+                },
+                "team_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                },
+                "user": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.UserResponse"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.MatchDetailsResponse": {
+            "type": "object",
+            "properties": {
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.MatchEventResponse"
+                    }
+                },
+                "lineups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.LineupResponse"
+                    }
+                },
+                "match": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.MatchResponse"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.MatchEventRequest": {
+            "type": "object",
+            "required": [
+                "minute",
+                "team_id",
+                "type"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Goal scored by player 10"
+                },
+                "fine_amount": {
+                    "type": "number",
+                    "example": 50
+                },
+                "minute": {
+                    "type": "integer",
+                    "example": 45
+                },
+                "player_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "team_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.MatchEventType"
+                        }
+                    ],
+                    "example": "goal"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.MatchEventResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "example": "Goal scored by player 10"
+                },
+                "fine_amount": {
+                    "type": "number",
+                    "example": 50
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 201
+                },
+                "minute": {
+                    "type": "integer",
+                    "example": 45
+                },
+                "player_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "player_name": {
+                    "type": "string",
+                    "example": "Cristiano Ronaldo"
+                },
+                "team_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "team_name": {
+                    "type": "string",
+                    "example": "Real Madrid CF"
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.MatchEventType"
+                        }
+                    ],
+                    "example": "goal"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.MatchRequest": {
+            "type": "object",
+            "required": [
+                "away_team_id",
+                "estimated_start_time",
+                "home_team_id",
+                "tournament_id"
+            ],
+            "properties": {
+                "away_team_id": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "estimated_start_time": {
+                    "type": "string",
+                    "example": "2026-06-01T15:00:00Z"
+                },
+                "field_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "group_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "home_team_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "stage": {
+                    "type": "string",
+                    "example": "group"
+                },
+                "tournament_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.MatchResponse": {
+            "type": "object",
+            "properties": {
+                "actual_start_time": {
+                    "type": "string",
+                    "example": "2026-06-01T15:05:00Z"
+                },
+                "away_score": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "away_team_id": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "away_team_name": {
+                    "type": "string",
+                    "example": "FC Barcelona"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "estimated_start_time": {
+                    "type": "string",
+                    "example": "2026-06-01T15:00:00Z"
+                },
+                "extra_minutes": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "field_id": {
+                    "type": "integer"
+                },
+                "field_name": {
+                    "type": "string",
+                    "example": "Main Stadium"
+                },
+                "group_id": {
+                    "type": "integer"
+                },
+                "home_score": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "home_team_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "home_team_name": {
+                    "type": "string",
+                    "example": "Real Madrid CF"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "stage": {
+                    "type": "string",
+                    "example": "group"
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.MatchStatus"
+                        }
+                    ],
+                    "example": "scheduled"
+                },
+                "tournament_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.MatchUpdateRequest": {
+            "type": "object",
+            "properties": {
+                "actual_start_time": {
+                    "type": "string",
+                    "example": "2026-06-01T15:05:00Z"
+                },
+                "away_score": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "extra_minutes": {
+                    "type": "integer",
+                    "example": 5
+                },
+                "home_score": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.MatchStatus"
+                        }
+                    ],
+                    "example": "live"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.MissingPayment": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 50
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Uniform Fee"
+                },
+                "type": {
+                    "description": "enrollment or extra",
+                    "type": "string",
+                    "example": "extra"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.MonitoringTeamStatus": {
+            "type": "object",
+            "properties": {
+                "is_fully_paid": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "manager_name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "missing_payments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.MissingPayment"
+                    }
+                },
+                "status_percentage": {
+                    "type": "number",
+                    "example": 75
+                },
+                "team_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "team_name": {
+                    "type": "string",
+                    "example": "Real Madrid CF"
+                },
+                "total_expected": {
+                    "type": "number",
+                    "example": 200
+                },
+                "total_paid": {
+                    "type": "number",
+                    "example": 150
+                },
+                "tournament_name": {
+                    "type": "string",
+                    "example": "Summer Cup"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.PaymentRequest": {
+            "type": "object",
+            "required": [
+                "amount",
+                "team_id",
+                "tournament_id",
+                "type"
+            ],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 150
+                },
+                "external_id": {
+                    "type": "string",
+                    "example": "PAY-123456"
+                },
+                "match_event_id": {
+                    "type": "integer"
+                },
+                "team_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "tournament_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.PaymentType"
+                        }
+                    ],
+                    "example": "enrollment"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.PaymentResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 150
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "external_id": {
+                    "type": "string",
+                    "example": "PAY-123456"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "manager_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "match_event_id": {
+                    "type": "integer"
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.PaymentStatus"
+                        }
+                    ],
+                    "example": "approved"
+                },
+                "team_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "tournament_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.PaymentType"
+                        }
+                    ],
+                    "example": "enrollment"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "Cristiano Ronaldo"
+                },
+                "number": {
+                    "type": "integer",
+                    "example": 7
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Cristiano Ronaldo"
+                },
+                "number": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "team_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerStatsResponse": {
+            "type": "object",
+            "properties": {
+                "goals": {
+                    "type": "integer"
+                },
+                "player_id": {
+                    "type": "integer"
+                },
+                "player_name": {
+                    "type": "string"
+                },
+                "reds": {
+                    "type": "integer"
+                },
+                "team_name": {
+                    "type": "string"
+                },
+                "yellows": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.SettingAppPublicResponse": {
+            "type": "object",
+            "properties": {
+                "metadata": {
+                    "type": "object",
+                    "additionalProperties": true
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.SettingRequest": {
+            "type": "object",
+            "required": [
+                "key",
+                "metadata"
+            ],
+            "properties": {
+                "key": {
+                    "type": "string",
+                    "example": "app"
+                },
+                "metadata": {
+                    "type": "string",
+                    "example": "{}"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.SettingResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "metadata": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.StandingsEntry": {
+            "type": "object",
+            "properties": {
+                "draws": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "fair_play_score": {
+                    "description": "Penalty points",
+                    "type": "integer",
+                    "example": -8
+                },
+                "goal_difference": {
+                    "type": "integer",
+                    "example": 15
+                },
+                "goals_against": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "goals_for": {
+                    "type": "integer",
+                    "example": 25
+                },
+                "losses": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "matches_played": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "points": {
+                    "type": "integer",
+                    "example": 23
+                },
+                "red_cards": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "suspended": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "team_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "team_name": {
+                    "type": "string",
+                    "example": "Real Madrid CF"
+                },
+                "wins": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "yellow_cards": {
+                    "type": "integer",
+                    "example": 5
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.StandingsResponse": {
+            "type": "object",
+            "properties": {
+                "entries": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.StandingsEntry"
+                    }
+                },
+                "tournament_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "tournament_name": {
+                    "type": "string",
+                    "example": "Summer Cup"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.TeamRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "Real Madrid CF"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.TeamResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "manager": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.UserResponse"
+                },
+                "manager_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Real Madrid CF"
+                },
+                "tournament_id": {
+                    "type": "integer",
+                    "example": 1
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentExtraPriceRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 25.5
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Uniform Fee"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentExtraPriceResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 25.5
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Uniform Fee"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentGroupResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Group A"
+                },
+                "teams": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TeamResponse"
+                    }
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "advancing_count": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "allow_late_payment": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "description": {
+                    "type": "string",
+                    "example": "The annual summer football tournament"
+                },
+                "end_date": {
+                    "type": "string",
+                    "example": "2026-06-30T00:00:00Z"
+                },
+                "enrollment_price": {
+                    "type": "number",
+                    "example": 150
+                },
+                "extra_prices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentExtraPriceRequest"
+                    }
+                },
+                "fair_play_enabled": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "location": {
+                    "type": "string",
+                    "example": "Madrid Sports Complex"
+                },
+                "max_teams": {
+                    "type": "integer",
+                    "example": 16
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Summer Cup 2026"
+                },
+                "payment_deadline": {
+                    "type": "string",
+                    "example": "2026-05-15T00:00:00Z"
+                },
+                "scheduling_day": {
+                    "type": "integer",
+                    "example": 0
+                },
+                "scheduling_start_hour": {
+                    "type": "integer",
+                    "example": 9
+                },
+                "start_date": {
+                    "type": "string",
+                    "example": "2026-06-01T00:00:00Z"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "upcoming"
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.TournamentType"
+                        }
+                    ],
+                    "example": "league"
+                },
+                "yellow_card_threshold": {
+                    "type": "integer",
+                    "example": 3
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentResponse": {
+            "type": "object",
+            "properties": {
+                "advancing_count": {
+                    "type": "integer"
+                },
+                "allow_late_payment": {
+                    "type": "boolean"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string",
+                    "example": "The annual summer football tournament"
+                },
+                "end_date": {
+                    "type": "string",
+                    "example": "2026-06-30T00:00:00Z"
+                },
+                "enrollment_price": {
+                    "type": "number",
+                    "example": 150
+                },
+                "extra_prices": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentExtraPriceResponse"
+                    }
+                },
+                "fair_play_enabled": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "location": {
+                    "type": "string",
+                    "example": "Madrid Sports Complex"
+                },
+                "max_teams": {
+                    "type": "integer",
+                    "example": 16
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Summer Cup 2026"
+                },
+                "payment_deadline": {
+                    "type": "string"
+                },
+                "scheduling_day": {
+                    "type": "integer"
+                },
+                "scheduling_start_hour": {
+                    "type": "integer"
+                },
+                "start_date": {
+                    "type": "string",
+                    "example": "2026-06-01T00:00:00Z"
+                },
+                "status": {
+                    "type": "string",
+                    "example": "upcoming"
+                },
+                "type": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.TournamentType"
+                        }
+                    ],
+                    "example": "league"
+                },
+                "yellow_card_threshold": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.UserResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "john@example.com"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "role": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.UserRole"
+                        }
+                    ],
+                    "example": "manager"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_models.MatchEventType": {
+            "type": "string",
+            "enum": [
+                "goal",
+                "yellow_card",
+                "red_card",
+                "foul",
+                "fine"
+            ],
+            "x-enum-varnames": [
+                "EventGoal",
+                "EventYellowCard",
+                "EventRedCard",
+                "EventFoul",
+                "EventFine"
+            ]
+        },
+        "github_com_baldomerocho_copafutbol_internal_models.MatchStatus": {
+            "type": "string",
+            "enum": [
+                "scheduled",
+                "live",
+                "finished"
+            ],
+            "x-enum-varnames": [
+                "MatchScheduled",
+                "MatchLive",
+                "MatchFinished"
+            ]
+        },
+        "github_com_baldomerocho_copafutbol_internal_models.PaymentStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "rejected",
+                "notFound",
+                "failed",
+                "approved",
+                "refunded"
+            ],
+            "x-enum-varnames": [
+                "PaymentPending",
+                "PaymentRejected",
+                "PaymentNotFound",
+                "PaymentFailed",
+                "PaymentApproved",
+                "PaymentRefunded"
+            ]
+        },
+        "github_com_baldomerocho_copafutbol_internal_models.PaymentType": {
+            "type": "string",
+            "enum": [
+                "enrollment",
+                "extra",
+                "fine"
+            ],
+            "x-enum-varnames": [
+                "PaymentTypeEnrollment",
+                "PaymentTypeExtra",
+                "PaymentTypeFine"
+            ]
+        },
+        "github_com_baldomerocho_copafutbol_internal_models.TournamentType": {
+            "type": "string",
+            "enum": [
+                "league",
+                "knockout",
+                "hybrid"
+            ],
+            "x-enum-varnames": [
+                "TypeLeague",
+                "TypeKnockout",
+                "TypeHybrid"
+            ]
+        },
+        "github_com_baldomerocho_copafutbol_internal_models.UserRole": {
+            "type": "string",
+            "enum": [
+                "admin",
+                "staff",
+                "manager"
+            ],
+            "x-enum-varnames": [
+                "RoleAdmin",
+                "RoleStaff",
+                "RoleManager"
+            ]
+        },
+        "internal_api_handlers.LoginRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "john@example.com"
+                },
+                "password": {
+                    "type": "string",
+                    "example": "secret123"
+                }
+            }
+        },
+        "internal_api_handlers.RegisterRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "name",
+                "password"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "john@example.com"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "John Doe"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "secret123"
+                },
+                "role": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.UserRole"
+                        }
+                    ],
+                    "example": "manager"
+                }
+            }
+        },
+        "internal_api_handlers.UpdatePaymentStatusRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.PaymentStatus"
+                        }
+                    ],
+                    "example": "approved"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "Type \"Bearer \u003ctoken\u003e\" to authenticate.",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    }
+}

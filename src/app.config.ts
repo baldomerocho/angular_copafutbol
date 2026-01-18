@@ -1,5 +1,5 @@
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScrolling } from '@angular/router';
 import Aura from '@primeuix/themes/aura';
@@ -7,6 +7,11 @@ import { providePrimeNG } from 'primeng/config';
 import { MessageService } from 'primeng/api';
 import { appRoutes } from './app.routes';
 import { authInterceptor } from './app/pages/auth/auth.interceptor';
+import { CatalogService } from './app/pages/service/catalog.service';
+
+export function initializeCatalogs(catalogService: CatalogService) {
+    return () => catalogService.fetchCatalogs();
+}
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -14,6 +19,12 @@ export const appConfig: ApplicationConfig = {
         provideHttpClient(withFetch(), withInterceptors([authInterceptor])),
         provideAnimationsAsync(),
         providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } }),
-        MessageService
+        MessageService,
+        {
+            provide: APP_INITIALIZER,
+            useFactory: initializeCatalogs,
+            deps: [CatalogService],
+            multi: true
+        }
     ]
 };
