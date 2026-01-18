@@ -8,9 +8,14 @@ import { MessageService } from 'primeng/api';
 import { appRoutes } from './app.routes';
 import { authInterceptor } from './app/pages/auth/auth.interceptor';
 import { CatalogService } from './app/pages/service/catalog.service';
+import { ConfigService } from './app/pages/service/config.service';
 
 export function initializeCatalogs(catalogService: CatalogService) {
     return () => catalogService.fetchCatalogs();
+}
+
+export function initializeAppConfig(configService: ConfigService) {
+    return () => configService.fetchAppConfig();
 }
 
 export const appConfig: ApplicationConfig = {
@@ -20,6 +25,12 @@ export const appConfig: ApplicationConfig = {
         provideAnimationsAsync(),
         providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } }),
         MessageService,
+        {
+            provide: APP_INITIALIZER,
+            useFactory: initializeAppConfig,
+            deps: [ConfigService],
+            multi: true
+        },
         {
             provide: APP_INITIALIZER,
             useFactory: initializeCatalogs,

@@ -23,5 +23,6 @@ export default [
     { path: 'payments', loadComponent: () => import('./payments/payments').then((m) => m.Payments), data: { roles: ['manager', 'staff', 'admin'] } },
     { path: 'users', loadComponent: () => import('./users/users').then((m) => m.Users), data: { roles: ['staff', 'admin'] } },
     { path: 'profile', loadComponent: () => import('./profile/profile').then((m) => m.Profile) },
+    { path: 'settings', loadComponent: () => import('./settings/settings').then((m) => m.Settings), data: { roles: ['admin'] } },
     { path: '**', redirectTo: '/notfound' }
 ] as Routes;

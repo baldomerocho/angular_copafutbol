@@ -6,9 +6,11 @@ import { StyleClassModule } from 'primeng/styleclass';
 import { AppConfigurator } from './app.configurator';
 import { LayoutService } from '../service/layout.service';
 import { AuthService } from '../../pages/service/auth.service';
+import { ConfigService } from '../../pages/service/config.service';
 import { Router } from '@angular/router';
 
 @Component({
+    // ... (skipping template for brevity if possible, but replace_file_content needs the block)
     selector: 'app-topbar',
     standalone: true,
     imports: [RouterModule, CommonModule, StyleClassModule, AppConfigurator],
@@ -18,8 +20,9 @@ import { Router } from '@angular/router';
                 <i class="pi pi-bars"></i>
             </button>
             <a class="layout-topbar-logo" routerLink="/">
-                <i class="pi pi-briefcase text-primary text-4xl mr-2"></i>
-                <span>COPA FUTBOL</span>
+                <img *ngIf="configService.appConfig()?.logo_url" [src]="configService.appConfig()?.logo_url" alt="Logo" class="mr-2" style="height: 2.5rem;">
+                <i *ngIf="!configService.appConfig()?.logo_url" class="pi pi-briefcase text-primary text-4xl mr-2"></i>
+                <span>{{ configService.appConfig()?.platform_name || 'COPA FUTBOL' }}</span>
             </a>
         </div>
 
@@ -70,7 +73,7 @@ import { Router } from '@angular/router';
 export class AppTopbar {
     items!: MenuItem[];
 
-    constructor(public layoutService: LayoutService, private authService: AuthService, private router: Router) { }
+    constructor(public layoutService: LayoutService, public configService: ConfigService, private authService: AuthService, private router: Router) { }
 
     toggleDarkMode() {
         this.layoutService.layoutConfig.update((state) => ({ ...state, darkTheme: !state.darkTheme }));

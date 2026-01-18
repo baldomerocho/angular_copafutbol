@@ -1,0 +1,50 @@
+<p-toast></p-toast>
+
+<div class="card">
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="m-0 font-bold text-2xl">Configuración del Sistema</h3>
+    </div>
+
+    <p-table [value]="settings()" [loading]="loading" [rowHover]="true" responsiveLayout="scroll">
+        <ng-template #header>
+            <tr>
+                <th>Clave (Key)</th>
+                <th style="width: 8rem" class="text-center">Acciones</th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-setting>
+            <tr>
+                <td class="font-bold text-primary">{{ setting.key }}</td>
+                <td class="text-center">
+                    <p-button icon="pi pi-pencil" [rounded]="true" [outlined]="true" severity="success"
+                        (onClick)="editSetting(setting)" />
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<p-dialog [(visible)]="editDialog" [style]="{ width: '600px' }" header="Editar Configuración" [modal]="true">
+    <ng-template #content>
+        <div class="flex flex-col gap-4">
+            <div class="flex flex-col gap-2">
+                <label class="font-bold">Clave: <span class="text-primary">{{ currentSetting.key }}</span></label>
+            </div>
+
+            <div class="flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                    <label for="metadata" class="font-bold">Metadatos (JSON)</label>
+                    <p-button label="Formatear" icon="pi pi-code" [text]="true" size="small" (onClick)="formatJson()" />
+                </div>
+                <textarea pTextarea id="metadata" [(ngModel)]="metadataString" rows="15" class="font-mono text-sm"
+                    [class.border-red-500]="!isValidJson" placeholder='{ "key": "value" }'></textarea>
+                <small class="text-red-500" *ngIf="!isValidJson">El formato JSON no es válido.</small>
+            </div>
+        </div>
+    </ng-template>
+
+    <ng-template #footer>
+        <p-button label="Cancelar" icon="pi pi-times" [text]="true" (onClick)="hideDialog()" />
+        <p-button label="Guardar" icon="pi pi-check" (onClick)="saveSetting()" [loading]="loading" />
+    </ng-template>
+</p-dialog>

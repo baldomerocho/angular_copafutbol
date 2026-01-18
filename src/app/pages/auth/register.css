@@ -1,5 +1,5 @@
 .auth-container {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://files.server.gt/publicos/auth-bg.jpg');
+    background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://files.server.gt/publicos/copafutbol/auth-bg.jpg');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -12,7 +12,7 @@
 
 :host-context(.app-dark) .auth-container,
 :host-context(.dark) .auth-container {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('https://files.server.gt/publicos/auth-bg.jpg');
+    background-image: linear-gradient(rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), url('https://files.server.gt/publicos/copafutbol/auth-bg.jpg');
 }
 
 .glass-card {
