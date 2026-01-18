@@ -50,4 +50,14 @@ export class TeamService {
         const prefix = this.authService.getRolePrefix();
         return this.http.post(`${this.baseUrl}/${prefix}/teams/${teamId}/players`, player) as Observable<BaseResponse<any>>;
     }
+
+    updatePlayer(teamId: number, playerId: number, player: any): Observable<BaseResponse<any>> {
+        const prefix = this.authService.getRolePrefix();
+        return this.http.put(`${this.baseUrl}/${prefix}/teams/${teamId}/players/${playerId}`, player) as Observable<BaseResponse<any>>;
+    }
+
+    deletePlayer(teamId: number, playerId: number): Observable<BaseResponse<any>> {
+        const prefix = this.authService.getRolePrefix();
+        return this.http.delete(`${this.baseUrl}/${prefix}/teams/${teamId}/players/${playerId}`) as Observable<BaseResponse<any>>;
+    }
 }

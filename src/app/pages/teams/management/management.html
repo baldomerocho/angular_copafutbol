@@ -1,0 +1,45 @@
+<p-toast></p-toast>
+
+<div class="card">
+    <div class="flex items-center justify-between mb-6">
+        <h3 class="m-0 font-bold text-2xl">{{ isEdit ? 'Editar Equipo' : 'Nuevo Equipo' }}</h3>
+        <p-button label="Volver" icon="pi pi-arrow-left" [outlined]="true" routerLink="/pages/teams" />
+    </div>
+
+    <p-fluid>
+        <div class="grid grid-cols-12 gap-6">
+            <div class="col-span-12 md:col-span-6">
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-2">
+                        <label for="name" class="font-bold">Nombre del Equipo</label>
+                        <input pInputText id="name" [(ngModel)]="team.name" placeholder="Ej: Real Madrid"
+                            [disabled]="loading" />
+                    </div>
+
+                    <div *ngIf="prefix === 'admin' || prefix === 'staff'" class="flex flex-col gap-2">
+                        <label for="tournament" class="font-bold">Torneo</label>
+                        <p-select [options]="tournaments" optionLabel="name" optionValue="id"
+                            [(ngModel)]="team.tournament_id" placeholder="Seleccione un torneo" [appendTo]="'body'"
+                            [loading]="loadingExtra" [disabled]="loading" />
+                    </div>
+
+                    <div *ngIf="prefix === 'admin' || prefix === 'staff'" class="flex flex-col gap-2">
+                        <label for="manager" class="font-bold">Entrenador / Gerente</label>
+                        <p-select [options]="managers" optionLabel="name" optionValue="id" [(ngModel)]="team.manager_id"
+                            placeholder="Seleccione un entrenador" [appendTo]="'body'" [loading]="loadingExtra"
+                            [disabled]="loading" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-span-12 mt-4">
+                <div class="flex justify-end gap-2">
+                    <p-button label="Cancelar" icon="pi pi-times" [text]="true" routerLink="/pages/teams"
+                        [disabled]="loading" />
+                    <p-button [label]="isEdit ? 'Actualizar Equipo' : 'Crear Equipo'" icon="pi pi-check"
+                        [loading]="loading" (onClick)="saveTeam()" />
+                </div>
+            </div>
+        </div>
+    </p-fluid>
+</div>
