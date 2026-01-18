@@ -15,5 +15,6 @@ export default [
     { path: 'teams', component: Teams, data: { roles: ['manager', 'staff', 'admin'] } },
     { path: 'fields', component: Fields, data: { roles: ['staff', 'admin'] } },
     { path: 'matches', component: Matches, data: { roles: ['staff', 'admin'] } },
+    { path: 'payments', loadComponent: () => import('./payments/payments').then((m) => m.Payments), data: { roles: ['manager', 'staff', 'admin'] } },
     { path: '**', redirectTo: '/notfound' }
 ] as Routes;

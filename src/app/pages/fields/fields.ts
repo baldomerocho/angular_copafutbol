@@ -9,7 +9,8 @@ import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { FieldService, Field } from '../service/field.service';
+import { FieldService } from '../service/field.service';
+import { Field } from '../service/interfaces/field.interface';
 
 @Component({
     selector: 'app-fields',

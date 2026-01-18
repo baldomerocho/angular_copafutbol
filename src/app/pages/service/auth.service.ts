@@ -2,14 +2,23 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
     providedIn: 'root'
 })
 export class AuthService {
-    private apiUrl = 'https://app-dev-clubfutbol.server.gt';
+    private apiUrl = environment.apiUrl;
 
     constructor(private http: HttpClient) { }
+
+    getRolePrefix(): string {
+        console.log("ENV:: ", environment.production)
+        const role = this.getUserRole();
+        if (role === 'admin') return 'admin';
+        if (role === 'staff') return 'staff';
+        return 'manager';
+    }
 
     login(credentials: any): Observable<any> {
         return this.http.post(`${this.apiUrl}/login`, credentials).pipe(

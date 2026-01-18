@@ -1,0 +1,115 @@
+<p-toast></p-toast>
+<div class="card">
+    <p-toolbar styleClass="mb-4">
+        <ng-template pTemplate="left">
+            <h4 class="m-0">Gestión de Pagos</h4>
+        </ng-template>
+        <ng-template pTemplate="right">
+            <button pButton label="Registrar Pago" icon="pi pi-plus" class="p-button-success" (click)="openNew()"
+                *ngIf="userRole === 'manager'"></button>
+        </ng-template>
+    </p-toolbar>
+
+    <p-table [value]="payments" [rows]="10" [paginator]="true" responsiveLayout="scroll" [loading]="loading">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Fecha</th>
+                <th *ngIf="userRole !== 'manager'">Equipo</th>
+                <th>Torneo</th>
+                <th>Tipo</th>
+                <th>Monto</th>
+                <th>Referencia</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-payment>
+            <tr>
+                <td>{{payment.created_at | date:'shortDate'}}</td>
+                <td *ngIf="userRole !== 'manager'">
+                    <strong>{{payment.team.name || payment.team_id}}</strong>
+                </td>
+                <td>{{payment.tournament.name}}</td>
+                <td>{{payment.type}}</td>
+                <td>{{payment.amount | currency:'USD'}}</td>
+                <td>{{payment.external_id}}</td>
+                <td>
+                    <p-tag [value]="getStatusName(payment.status)" [severity]="getSeverity(payment.status)"></p-tag>
+                </td>
+                <td>
+                    <button pButton icon="pi pi-check-circle" class="p-button-rounded p-button-info"
+                        (click)="editStatus(payment)" *ngIf="userRole !== 'manager'"></button>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<!-- Modal Registro (Manager) -->
+<p-dialog [(visible)]="paymentDialog" [style]="{width: '450px'}" header="Registrar Nuevo Pago" [modal]="true"
+    class="p-fluid">
+    <ng-template pTemplate="content">
+        <div class="field">
+            <label>Torneo</label>
+            <p-select [options]="tournaments" [(ngModel)]="payment.tournament_id" optionLabel="name" optionValue="id"
+                placeholder="Selecciona Torneo" appendTo="body"></p-select>
+        </div>
+        <div class="field">
+            <label>Equipo</label>
+            <p-select [options]="teams" [(ngModel)]="payment.team_id" optionLabel="name" optionValue="id"
+                placeholder="Selecciona Equipo" appendTo="body"></p-select>
+        </div>
+        <div class="grid">
+            <div class="col-6 field">
+                <label>Tipo de Pago</label>
+                <p-select [options]="paymentTypes()" [(ngModel)]="payment.type" optionLabel="name" optionValue="id"
+                    placeholder="Tipo" appendTo="body"></p-select>
+            </div>
+            <div class="col-6 field">
+                <label>Monto</label>
+                <input type="number" pInputText [(ngModel)]="payment.amount" placeholder="0.00" />
+            </div>
+        </div>
+        <div class="field">
+            <label>Referencia/No. Boleta</label>
+            <input type="text" pInputText [(ngModel)]="payment.external_id" placeholder="Ej. 123456" />
+        </div>
+        <div class="field">
+            <label>Fecha de Pago</label>
+            <p-datepicker [(ngModel)]="paymentDate" [showIcon]="true" appendTo="body"></p-datepicker>
+        </div>
+        <div class="field">
+            <label>Descripción (Opcional)</label>
+            <input type="text" pInputText [(ngModel)]="payment.description" />
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+        <button pButton label="Enviar Comprobante" icon="pi pi-check" class="p-button-text" (click)="savePayment()"
+            [loading]="loading"></button>
+    </ng-template>
+</p-dialog>
+
+<!-- Modal Cambio Estado (Staff/Admin) -->
+<p-dialog [(visible)]="statusDialog" [style]="{width: '400px'}" header="Actualizar Estado de Pago" [modal]="true"
+    class="p-fluid">
+    <ng-template pTemplate="content" *ngIf="payment">
+        <div class="mb-4">
+            <div class="font-bold">Referencia: {{payment.external_id}}</div>
+            <div class="text-muted-color">Equipo: {{payment.team?.name || payment.team_id}}</div>
+            <div class="text-muted-color">Monto: {{payment.amount | currency:'USD'}}</div>
+        </div>
+        <div class="field">
+            <label>Nuevo Estado</label>
+            <p-select [options]="paymentStatuses()" [(ngModel)]="payment.status" optionLabel="name" optionValue="id"
+                placeholder="Selecciona Estado" appendTo="body"></p-select>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+        <button pButton label="Actualizar" icon="pi pi-check" class="p-button-text" (click)="updateStatus()"
+            [loading]="loading"></button>
+    </ng-template>
+</p-dialog>

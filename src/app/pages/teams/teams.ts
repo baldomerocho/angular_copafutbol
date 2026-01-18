@@ -9,7 +9,8 @@ import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { TeamService, Team } from '../service/team.service';
+import { TeamService } from '../service/team.service';
+import { Team } from '../service/interfaces/team.interface';
 
 @Component({
     selector: 'app-teams',

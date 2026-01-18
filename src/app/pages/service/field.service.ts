@@ -1,21 +1,21 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { AuthService } from './auth.service';
 
-export interface Field {
-    id?: number;
-    name: string;
-    location?: string;
-    capacity?: number;
-}
+import { Field } from './interfaces/field.interface';
 
 @Injectable({
     providedIn: 'root'
 })
 export class FieldService {
-    private baseUrl = 'https://app-dev-clubfutbol.server.gt';
+    private baseUrl = environment.apiUrl;
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        private authService: AuthService
+    ) { }
 
     getFields(): Observable<any> {
         return this.http.get(`${this.baseUrl}/public/fields`);
@@ -26,14 +26,17 @@ export class FieldService {
     }
 
     createField(field: Field): Observable<any> {
-        return this.http.post(`${this.baseUrl}/admin/fields`, field);
+        const prefix = this.authService.getRolePrefix();
+        return this.http.post(`${this.baseUrl}/${prefix}/fields`, field);
     }
 
     updateField(id: number, field: Field): Observable<any> {
-        return this.http.put(`${this.baseUrl}/admin/fields/${id}`, field);
+        const prefix = this.authService.getRolePrefix();
+        return this.http.put(`${this.baseUrl}/${prefix}/fields/${id}`, field);
     }
 
     deleteField(id: number): Observable<any> {
-        return this.http.delete(`${this.baseUrl}/admin/fields/${id}`);
+        const prefix = this.authService.getRolePrefix();
+        return this.http.delete(`${this.baseUrl}/${prefix}/fields/${id}`);
     }
 }

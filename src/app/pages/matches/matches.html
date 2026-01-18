@@ -21,11 +21,11 @@
         </ng-template>
         <ng-template pTemplate="body" let-match>
             <tr>
-                <td>{{match.match_date | date:'short'}}</td>
+                <td>{{match.estimated_start_time | date:'short'}}</td>
                 <td>{{getTournamentName(match.tournament_id)}}</td>
-                <td>{{getTeamName(match.local_team_id)}}</td>
-                <td>{{getTeamName(match.visitor_team_id)}}</td>
-                <td>{{getFieldName(match.field_id)}}</td>
+                <td>{{match.home_team_name || getTeamName(match.home_team_id)}}</td>
+                <td>{{match.away_team_name || getTeamName(match.away_team_id)}}</td>
+                <td>{{match.field_name || getFieldName(match.field_id)}}</td>
                 <td>{{getStatusName(match.status)}}</td>
                 <td>
                     <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
@@ -46,23 +46,23 @@
         <div class="field">
             <label>Torneo</label>
             <p-select [options]="tournaments" [(ngModel)]="match.tournament_id" optionLabel="name" optionValue="id"
-                placeholder="Selecciona Torneo"></p-select>
+                placeholder="Selecciona Torneo" appendTo="body"></p-select>
         </div>
         <div class="field">
             <label>Sede</label>
             <p-select [options]="fields" [(ngModel)]="match.field_id" optionLabel="name" optionValue="id"
-                placeholder="Selecciona Sede"></p-select>
+                placeholder="Selecciona Sede" appendTo="body"></p-select>
         </div>
         <div class="grid">
             <div class="col-6 field">
                 <label>Equipo Local</label>
-                <p-select [options]="teams" [(ngModel)]="match.local_team_id" optionLabel="name" optionValue="id"
-                    placeholder="Local"></p-select>
+                <p-select [options]="teams" [(ngModel)]="match.home_team_id" optionLabel="name" optionValue="id"
+                    placeholder="Local" appendTo="body"></p-select>
             </div>
             <div class="col-6 field">
                 <label>Equipo Visitante</label>
-                <p-select [options]="teams" [(ngModel)]="match.visitor_team_id" optionLabel="name" optionValue="id"
-                    placeholder="Visitante"></p-select>
+                <p-select [options]="teams" [(ngModel)]="match.away_team_id" optionLabel="name" optionValue="id"
+                    placeholder="Visitante" appendTo="body"></p-select>
             </div>
         </div>
         <div class="field">
@@ -72,7 +72,7 @@
         <div class="field" *ngIf="match.id">
             <label>Estado</label>
             <p-select [options]="statuses()" [(ngModel)]="match.status" optionLabel="name" optionValue="id"
-                placeholder="Estado del Partido"></p-select>
+                placeholder="Estado del Partido" appendTo="body"></p-select>
         </div>
     </ng-template>
 

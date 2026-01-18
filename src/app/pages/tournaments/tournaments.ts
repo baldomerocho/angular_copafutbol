@@ -10,7 +10,8 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { SelectModule } from 'primeng/select';
-import { TournamentService, Tournament } from '../service/tournament.service';
+import { TournamentService } from '../service/tournament.service';
+import { Tournament } from '../service/interfaces/tournament.interface';
 import { CatalogService } from '../service/catalog.service';
 
 @Component({

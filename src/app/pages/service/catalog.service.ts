@@ -1,28 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
-export interface CatalogItem {
-    id: string;
-    name: string;
-}
-
-export interface CatalogsMetadata {
-    match_event_types: CatalogItem[];
-    match_stages: CatalogItem[];
-    match_statuses: CatalogItem[];
-    payment_statuses: CatalogItem[];
-    payment_types: CatalogItem[];
-    tournament_statuses: CatalogItem[];
-    tournament_types: CatalogItem[];
-    user_roles: CatalogItem[];
-}
+import { CatalogItem, CatalogsMetadata } from './interfaces/catalog.interface';
 
 @Injectable({
     providedIn: 'root'
 })
 export class CatalogService {
-    private baseUrl = 'https://app-dev-clubfutbol.server.gt';
+    private baseUrl = environment.apiUrl;
 
     // Using signals for easy access to catalogs across the app
     catalogs = signal<CatalogsMetadata | null>(null);

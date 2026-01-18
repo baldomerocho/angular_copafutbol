@@ -59,13 +59,13 @@
             <div class="col-6 field">
                 <label>Tipo</label>
                 <p-select [options]="types()" [(ngModel)]="tournament.status" optionLabel="name" optionValue="id"
-                    placeholder="Tipo"></p-select>
+                    placeholder="Tipo" appendTo="body"></p-select>
             </div>
         </div>
         <div class="field" *ngIf="tournament.id">
             <label>Estado</label>
             <p-select [options]="statuses()" [(ngModel)]="tournament.status" optionLabel="name" optionValue="id"
-                placeholder="Estado"></p-select>
+                placeholder="Estado" appendTo="body"></p-select>
         </div>
     </ng-template>
 

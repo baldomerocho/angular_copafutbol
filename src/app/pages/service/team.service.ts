@@ -1,41 +1,45 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { AuthService } from './auth.service';
 
-export interface Team {
-    id?: number;
-    name: string;
-    description?: string;
-    logo_url?: string;
-    manager_id?: number;
-}
+import { Team } from './interfaces/team.interface';
 
 @Injectable({
     providedIn: 'root'
 })
 export class TeamService {
-    private baseUrl = 'https://app-dev-clubfutbol.server.gt';
+    private baseUrl = environment.apiUrl;
 
-    constructor(private http: HttpClient) { }
+    constructor(
+        private http: HttpClient,
+        private authService: AuthService
+    ) { }
 
     getTeams(): Observable<any> {
-        return this.http.get(`${this.baseUrl}/manager/teams`);
+        const prefix = this.authService.getRolePrefix();
+        return this.http.get(`${this.baseUrl}/${prefix}/teams`);
     }
 
     getTeam(id: number): Observable<any> {
-        return this.http.get(`${this.baseUrl}/manager/teams/${id}`);
+        const prefix = this.authService.getRolePrefix();
+        return this.http.get(`${this.baseUrl}/${prefix}/teams/${id}`);
     }
 
     createTeam(team: Team): Observable<any> {
-        return this.http.post(`${this.baseUrl}/manager/teams`, team);
+        const prefix = this.authService.getRolePrefix();
+        return this.http.post(`${this.baseUrl}/${prefix}/teams`, team);
     }
 
     updateTeam(id: number, team: Team): Observable<any> {
-        return this.http.put(`${this.baseUrl}/manager/teams/${id}`, team);
+        const prefix = this.authService.getRolePrefix();
+        return this.http.put(`${this.baseUrl}/${prefix}/teams/${id}`, team);
     }
 
     deleteTeam(id: number): Observable<any> {
-        return this.http.delete(`${this.baseUrl}/manager/teams/${id}`);
+        const prefix = this.authService.getRolePrefix();
+        return this.http.delete(`${this.baseUrl}/${prefix}/teams/${id}`);
     }
 
     getPlayers(teamId: number): Observable<any> {
@@ -43,6 +47,7 @@ export class TeamService {
     }
 
     addPlayer(teamId: number, player: any): Observable<any> {
-        return this.http.post(`${this.baseUrl}/manager/teams/${teamId}/players`, player);
+        const prefix = this.authService.getRolePrefix();
+        return this.http.post(`${this.baseUrl}/${prefix}/teams/${teamId}/players`, player);
     }
 }
