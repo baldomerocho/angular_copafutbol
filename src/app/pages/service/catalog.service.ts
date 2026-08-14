@@ -1,32 +1,38 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { BaseResponse } from './interfaces/base.interface';
-import { CatalogsResponse, SimpleRelation, Metadata } from './interfaces/catalog.interface';
+import { CatalogKey, CatalogsResponse, Metadata, SimpleRelation } from './interfaces/catalog.interface';
 
-@Injectable({
-    providedIn: 'root'
-})
+/**
+ * Catalogs hold the Spanish labels for every enum the API uses. They are fetched
+ * once at boot from `/public/settings/catalogs` and read synchronously afterwards,
+ * so templates can call `label()` without an async pipe.
+ */
+@Injectable({ providedIn: 'root' })
 export class CatalogService {
-    private baseUrl = environment.apiUrl;
-    private catalogs = new BehaviorSubject<CatalogsResponse | null>(null);
+    private readonly http = inject(HttpClient);
+    private readonly baseUrl = environment.apiUrl;
 
-    constructor(private http: HttpClient) { }
+    private readonly catalogs = signal<Partial<CatalogsResponse>>({});
+    readonly loaded = computed(() => Object.keys(this.catalogs()).length > 0);
 
     fetchCatalogs(): Observable<BaseResponse<Metadata<CatalogsResponse>>> {
-        const response = this.http.get(`${this.baseUrl}/public/settings/catalogs`) as Observable<BaseResponse<Metadata<CatalogsResponse>>>;
-        response.subscribe((res) => {
-            this.setCatalogs(res.data.metadata);
-        });
-        return response;
+        return this.http
+            .get<BaseResponse<Metadata<CatalogsResponse>>>(`${this.baseUrl}/public/settings/catalogs`)
+            .pipe(tap((res) => this.catalogs.set(res?.data?.metadata ?? {})));
     }
 
-    setCatalogs(catalogs: CatalogsResponse) {
-        this.catalogs.next(catalogs);
+    /** Every entry of a catalog, ready to feed a p-select. */
+    get(key: CatalogKey): SimpleRelation[] {
+        return this.catalogs()[key] ?? [];
     }
 
-    getCatalog(key: keyof CatalogsResponse): SimpleRelation[] {
-        return this.catalogs.value ? this.catalogs.value[key] : [];
+    /** The Spanish label for an id, falling back to the id when unknown. */
+    label(key: CatalogKey, id: string | number | undefined | null): string {
+        if (id === undefined || id === null || id === '') return '';
+        const found = this.get(key).find((entry) => entry.id === String(id));
+        return found?.name ?? String(id);
     }
 }

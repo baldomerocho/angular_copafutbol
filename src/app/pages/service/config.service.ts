@@ -1,54 +1,51 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { environment } from '../../../environments/environment';
+import { ApiBase } from './api.base';
 import { BaseResponse } from './interfaces/base.interface';
-import { AppConfig, Setting, SettingUpdateRequest } from './interfaces/config.interface';
 import { Metadata } from './interfaces/catalog.interface';
-import { AuthService } from './auth.service';
+import { AppConfig, Setting, SettingUpdateRequest } from './interfaces/config.interface';
 
-@Injectable({
-    providedIn: 'root'
-})
-export class ConfigService {
-    private baseUrl = environment.apiUrl;
-
-    // Global app configuration Signal
-    appConfig = signal<AppConfig | null>(null);
-
-    constructor(
-        private http: HttpClient,
-        private authService: AuthService
-    ) { }
+@Injectable({ providedIn: 'root' })
+export class ConfigService extends ApiBase {
+    /** Platform branding, loaded once at boot and read by the layout. */
+    readonly appConfig = signal<AppConfig | null>(null);
 
     fetchAppConfig(): Observable<BaseResponse<Metadata<AppConfig>>> {
-        return this.http.get<BaseResponse<Metadata<AppConfig>>>(`${this.baseUrl}/public/settings/app`).pipe(
-            tap(res => {
-                if (res.data?.metadata) {
-                    this.appConfig.set(res.data.metadata);
-                    this.applyPrimaryColor(res.data.metadata.primary_color);
+        return this.http.get<BaseResponse<Metadata<AppConfig>>>(this.pub('/settings/app')).pipe(
+            tap((res) => {
+                const metadata = res?.data?.metadata;
+                if (metadata) {
+                    this.appConfig.set(metadata);
+                    this.applyPrimaryColor(metadata.primary_color);
                 }
             })
         );
     }
 
-    private applyPrimaryColor(color: string) {
-        if (color) {
-            // Apply to CSS variables for PrimeNG Aura theme
-            const root = document.documentElement;
-            root.style.setProperty('--p-primary-color', color);
-            // Also update hover/active states if possible, or just the main primary
-        }
+    platformName(): string {
+        return this.appConfig()?.platform_name || 'Copa Fútbol';
     }
 
-    getAdminSettings(): Observable<BaseResponse<Setting[]>> {
-        const prefix = this.authService.getRolePrefix();
-        return this.http.get<BaseResponse<Setting[]>>(`${this.baseUrl}/${prefix}/settings`);
+    currencySymbol(): string {
+        return this.appConfig()?.currency_symbol || '$';
     }
 
-    updateSetting(key: string, metadata: any): Observable<BaseResponse<any>> {
-        const prefix = this.authService.getRolePrefix();
+    /** Settings administration is admin-only, so the prefix is fixed. */
+    getSettings(): Observable<BaseResponse<Setting[]>> {
+        return this.http.get<BaseResponse<Setting[]>>(`${this.baseUrl}/admin/settings`);
+    }
+
+    updateSetting(key: string, metadata: unknown): Observable<BaseResponse<Setting>> {
         const body: SettingUpdateRequest = { key, metadata };
-        return this.http.post<BaseResponse<any>>(`${this.baseUrl}/${prefix}/settings`, body);
+        return this.http.post<BaseResponse<Setting>>(`${this.baseUrl}/admin/settings`, body);
+    }
+
+    /**
+     * Paints the configured brand colour over the Aura palette. Only the base tone
+     * is derived here; the theme keeps its own hover and active steps.
+     */
+    private applyPrimaryColor(color?: string) {
+        if (!color) return;
+        document.documentElement.style.setProperty('--p-primary-color', color);
     }
 }

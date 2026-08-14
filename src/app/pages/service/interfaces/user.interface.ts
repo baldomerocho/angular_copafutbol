@@ -24,6 +24,8 @@ export interface UserUpdateProfileRequest {
     email?: string;
 }
 
+/** Matches the API contract: the current password is verified before the change. */
 export interface UserUpdatePasswordRequest {
-    password?: string;
+    current_password: string;
+    new_password: string;
 }

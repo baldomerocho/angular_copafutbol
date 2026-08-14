@@ -1,16 +1,20 @@
+/** Branding served from the `app` setting and applied at boot. */
 export interface AppConfig {
-    currency_symbol: string;
-    logo_url: string;
     platform_name: string;
+    logo_url: string;
+    currency_symbol: string;
     primary_color: string;
+    contact_email?: string;
+    contact_phone?: string;
 }
 
 export interface Setting {
+    id?: number;
     key: string;
-    metadata: any;
+    metadata: Record<string, unknown> | null;
 }
 
 export interface SettingUpdateRequest {
     key: string;
-    metadata: any;
+    metadata: unknown;
 }

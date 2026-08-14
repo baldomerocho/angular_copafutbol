@@ -1,42 +1,28 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../environments/environment';
-import { AuthService } from './auth.service';
+import { ApiBase } from './api.base';
 import { BaseResponse } from './interfaces/base.interface';
-import { FieldResponse, FieldRequest } from './interfaces/field.interface';
+import { FieldRequest, FieldResponse } from './interfaces/field.interface';
 
-@Injectable({
-    providedIn: 'root'
-})
-export class FieldService {
-    private baseUrl = environment.apiUrl;
-
-    constructor(
-        private http: HttpClient,
-        private authService: AuthService
-    ) { }
-
+@Injectable({ providedIn: 'root' })
+export class FieldService extends ApiBase {
     getFields(): Observable<BaseResponse<FieldResponse[]>> {
-        return this.http.get(`${this.baseUrl}/public/fields`) as Observable<BaseResponse<FieldResponse[]>>;
+        return this.http.get<BaseResponse<FieldResponse[]>>(this.pub('/fields'));
     }
 
     getField(id: number): Observable<BaseResponse<FieldResponse>> {
-        return this.http.get(`${this.baseUrl}/public/fields/${id}`) as Observable<BaseResponse<FieldResponse>>;
+        return this.http.get<BaseResponse<FieldResponse>>(this.pub(`/fields/${id}`));
     }
 
     createField(field: FieldRequest): Observable<BaseResponse<FieldResponse>> {
-        const prefix = this.authService.getRolePrefix();
-        return this.http.post(`${this.baseUrl}/${prefix}/fields`, field) as Observable<BaseResponse<FieldResponse>>;
+        return this.http.post<BaseResponse<FieldResponse>>(this.scoped('/fields'), field);
     }
 
     updateField(id: number, field: FieldRequest): Observable<BaseResponse<FieldResponse>> {
-        const prefix = this.authService.getRolePrefix();
-        return this.http.put(`${this.baseUrl}/${prefix}/fields/${id}`, field) as Observable<BaseResponse<FieldResponse>>;
+        return this.http.put<BaseResponse<FieldResponse>>(this.scoped(`/fields/${id}`), field);
     }
 
-    deleteField(id: number): Observable<BaseResponse<any>> {
-        const prefix = this.authService.getRolePrefix();
-        return this.http.delete(`${this.baseUrl}/${prefix}/fields/${id}`) as Observable<BaseResponse<any>>;
+    deleteField(id: number): Observable<BaseResponse<FieldResponse>> {
+        return this.http.delete<BaseResponse<FieldResponse>>(this.scoped(`/fields/${id}`));
     }
 }

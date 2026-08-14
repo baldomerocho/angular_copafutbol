@@ -1,10 +1,20 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { BaseResponse } from './interfaces/base.interface';
 import { LoginRequest, LoginResponse, RegisterRequest } from './interfaces/auth.interface';
+import { UserResponse } from './interfaces/user.interface';
+
+/** Roles the API knows about, ordered from least to most privileged. */
+export type UserRole = 'manager' | 'staff' | 'admin';
+
+interface JwtClaims {
+    user_id?: number;
+    role?: UserRole;
+    exp?: number;
+}
 
 @Injectable({
     providedIn: 'root'
@@ -12,67 +22,112 @@ import { LoginRequest, LoginResponse, RegisterRequest } from './interfaces/auth.
 export class AuthService {
     private apiUrl = environment.apiUrl;
 
-    constructor(private http: HttpClient) { }
+    /** Current user, kept in a signal so the layout reacts to sign-in and sign-out. */
+    readonly currentUser = signal<UserResponse | null>(this.readStoredUser());
 
+    constructor(private http: HttpClient) {}
+
+    /**
+     * The API mounts the same handler under /manager, /staff and /admin, and scopes
+     * rows by the caller's role. Services build their URLs with this prefix.
+     */
     getRolePrefix(): string {
-        const role = this.getUserRole();
-        if (role === 'admin') return 'admin';
-        if (role === 'staff') return 'staff';
-        return 'manager';
+        return this.getUserRole() ?? 'manager';
     }
 
     login(credentials: LoginRequest): Observable<BaseResponse<LoginResponse>> {
-        return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
-            tap((response: any) => {
-                if (response.data && response.data.token) {
-                    localStorage.setItem('token', response.data.token);
-                    localStorage.setItem('user', JSON.stringify(response.data.user));
+        return this.http.post<BaseResponse<LoginResponse>>(`${this.apiUrl}/login`, credentials).pipe(
+            tap((response) => {
+                const data = response?.data;
+                if (data?.token) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    this.currentUser.set(data.user);
                 }
             })
-        ) as Observable<BaseResponse<LoginResponse>>;
+        );
     }
 
-    register(userData: RegisterRequest): Observable<BaseResponse<any>> {
-        return this.http.post(`${this.apiUrl}/register`, userData) as Observable<BaseResponse<any>>;
+    register(userData: RegisterRequest): Observable<BaseResponse<UserResponse>> {
+        return this.http.post<BaseResponse<UserResponse>>(`${this.apiUrl}/register`, userData);
     }
 
     logout() {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        this.currentUser.set(null);
     }
 
-    getToken() {
+    getToken(): string | null {
         return localStorage.getItem('token');
     }
 
-    getUser() {
-        const user = localStorage.getItem('user');
-        return user ? JSON.parse(user) : null;
+    getUser(): UserResponse | null {
+        return this.currentUser();
     }
 
+    setUser(user: UserResponse) {
+        localStorage.setItem('user', JSON.stringify(user));
+        this.currentUser.set(user);
+    }
+
+    /** A session counts as valid only while its token is present and unexpired. */
     isLoggedIn(): boolean {
-        return !!this.getToken();
+        const claims = this.readClaims();
+        if (!claims) return false;
+
+        if (claims.exp && claims.exp * 1000 <= Date.now()) {
+            this.logout();
+            return false;
+        }
+        return true;
     }
 
-    getUserRole(): string | null {
+    getUserRole(): UserRole | null {
+        return this.readClaims()?.role ?? null;
+    }
+
+    getUserId(): number | null {
+        return this.readClaims()?.user_id ?? null;
+    }
+
+    hasRole(requiredRoles: UserRole | UserRole[] | string | string[]): boolean {
+        const role = this.getUserRole();
+        if (!role) return false;
+
+        return Array.isArray(requiredRoles)
+            ? (requiredRoles as string[]).includes(role)
+            : requiredRoles === role;
+    }
+
+    isManager(): boolean {
+        return this.getUserRole() === 'manager';
+    }
+
+    isStaffOrAdmin(): boolean {
+        return this.hasRole(['staff', 'admin']);
+    }
+
+    private readClaims(): JwtClaims | null {
         const token = this.getToken();
         if (!token) return null;
 
         try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            return payload.role || null;
-        } catch (e) {
+            const payload = token.split('.')[1];
+            const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+            return JSON.parse(atob(normalized)) as JwtClaims;
+        } catch {
             return null;
         }
     }
 
-    hasRole(requiredRoles: string | string[]): boolean {
-        const userRole = this.getUserRole();
-        if (!userRole) return false;
-
-        if (Array.isArray(requiredRoles)) {
-            return requiredRoles.includes(userRole);
+    private readStoredUser(): UserResponse | null {
+        const raw = localStorage.getItem('user');
+        if (!raw) return null;
+        try {
+            return JSON.parse(raw) as UserResponse;
+        } catch {
+            return null;
         }
-        return userRole === requiredRoles;
     }
 }

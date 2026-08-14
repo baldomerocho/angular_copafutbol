@@ -1,145 +1,181 @@
-import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
+import { FluidModule } from 'primeng/fluid';
 import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
-import { FluidModule } from 'primeng/fluid';
-import { MessageService } from 'primeng/api';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { AuthService } from '../../service/auth.service';
+import { TeamRequest } from '../../service/interfaces/team.interface';
+import { TournamentResponse } from '../../service/interfaces/tournament.interface';
+import { UserResponse } from '../../service/interfaces/user.interface';
 import { TeamService } from '../../service/team.service';
 import { TournamentService } from '../../service/tournament.service';
 import { UserService } from '../../service/user.service';
-import { TournamentResponse } from '../../service/interfaces/tournament.interface';
-import { UserResponse } from '../../service/interfaces/user.interface';
-import { TeamRequest } from '../../service/interfaces/team.interface';
-import { AuthService } from '../../service/auth.service';
 
 @Component({
     selector: 'app-team-management',
     standalone: true,
     imports: [
-        CommonModule,
-        FormsModule,
-        RouterModule,
-        ButtonModule,
-        InputTextModule,
-        SelectModule,
-        ToastModule,
-        FluidModule
+        CommonModule, FormsModule, RouterModule, ButtonModule, InputTextModule,
+        SelectModule, ToastModule, FluidModule, MessageModule
     ],
     providers: [MessageService],
-    templateUrl: './management.html'
+    template: `
+        <p-toast />
+
+        <div class="card">
+            <div class="flex flex-wrap justify-between items-start gap-4 mb-6">
+                <div>
+                    <h1 class="text-xl font-semibold m-0">{{ isEdit ? 'Editar equipo' : 'Nuevo equipo' }}</h1>
+                    <p class="text-muted-color text-sm mt-1 mb-0">
+                        {{ isManager() ? 'El equipo queda a tu nombre.' : 'Asigna el delegado responsable y el torneo.' }}
+                    </p>
+                </div>
+                <div class="flex gap-2">
+                    <p-button label="Cancelar" severity="secondary" [text]="true" routerLink="/pages/teams" />
+                    <p-button label="Guardar" icon="pi pi-check" [loading]="saving()" (onClick)="save()" />
+                </div>
+            </div>
+
+            <p-fluid>
+                <div class="grid grid-cols-12 gap-4">
+                    <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
+                        <label class="font-medium">Nombre del equipo <span class="text-red-500">*</span></label>
+                        <input pInputText [(ngModel)]="team.name" placeholder="Deportivo Central" />
+                    </div>
+
+                    @if (!isManager()) {
+                        <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
+                            <label class="font-medium">Delegado <span class="text-red-500">*</span></label>
+                            <p-select [options]="managers()" [(ngModel)]="team.manager_id" optionLabel="name"
+                                      optionValue="id" placeholder="Selecciona un delegado" appendTo="body"
+                                      [filter]="true" filterBy="name,email" [loading]="loadingExtra()" />
+                        </div>
+
+                        <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
+                            <label class="font-medium">Torneo</label>
+                            <p-select [options]="tournaments()" [(ngModel)]="team.tournament_id" optionLabel="name"
+                                      optionValue="id" placeholder="Sin inscribir" appendTo="body" [showClear]="true" />
+                            <small class="text-muted-color">Asignar el torneo aquí salta la validación de pagos.</small>
+                        </div>
+                    } @else if (isEdit && team.tournament_id) {
+                        <div class="col-span-12">
+                            <p-message severity="secondary" icon="pi pi-info-circle" styleClass="w-full">
+                                El equipo ya está inscrito en un torneo. Para cambiarlo, contacta al staff.
+                            </p-message>
+                        </div>
+                    }
+                </div>
+            </p-fluid>
+        </div>
+    `
 })
 export class TeamManagement implements OnInit {
-    team: any = {
-        name: '',
-        tournament_id: undefined,
-        manager_id: undefined
-    };
+    private readonly teamService = inject(TeamService);
+    private readonly tournamentService = inject(TournamentService);
+    private readonly userService = inject(UserService);
+    private readonly authService = inject(AuthService);
+    private readonly messageService = inject(MessageService);
+    private readonly route = inject(ActivatedRoute);
+    private readonly router = inject(Router);
 
-    isEdit: boolean = false;
-    loading: boolean = false;
-    loadingExtra: boolean = false;
-    prefix: string = '';
+    team: TeamRequest & { id?: number } = { name: '', tournament_id: undefined, manager_id: undefined };
+    isEdit = false;
 
-    tournaments: TournamentResponse[] = [];
-    managers: UserResponse[] = [];
-
-    constructor(
-        private teamService: TeamService,
-        private tournamentService: TournamentService,
-        private userService: UserService,
-        private authService: AuthService,
-        private messageService: MessageService,
-        private route: ActivatedRoute,
-        private router: Router
-    ) { }
+    readonly tournaments = signal<TournamentResponse[]>([]);
+    readonly managers = signal<UserResponse[]>([]);
+    readonly saving = signal(false);
+    readonly loadingExtra = signal(false);
 
     ngOnInit() {
-        this.prefix = this.authService.getRolePrefix();
         const id = this.route.snapshot.params['id'];
-
         if (id) {
             this.isEdit = true;
-            this.loadTeam(id);
+            this.load(Number(id));
         }
 
-        if (this.prefix === 'admin' || this.prefix === 'staff') {
-            this.loadExtraData();
+        // Only staff and admin pick the owner and the tournament.
+        if (!this.isManager()) {
+            this.loadPickers();
         }
     }
 
-    loadTeam(id: number) {
-        this.loading = true;
+    isManager(): boolean {
+        return this.authService.isManager();
+    }
+
+    private loadPickers() {
+        this.loadingExtra.set(true);
+        forkJoin({
+            tournaments: this.tournamentService.getTournaments().pipe(catchError(() => of({ data: [] }))),
+            managers: this.userService.getUsers('manager').pipe(catchError(() => of({ data: [] })))
+        }).subscribe(({ tournaments, managers }) => {
+            this.tournaments.set((tournaments.data ?? []) as TournamentResponse[]);
+            this.managers.set((managers.data ?? []) as UserResponse[]);
+            this.loadingExtra.set(false);
+        });
+    }
+
+    private load(id: number) {
         this.teamService.getTeam(id).subscribe({
             next: (res) => {
-                this.team = res.data;
-                this.loading = false;
+                const data = res.data;
+                if (!data) return;
+                this.team = {
+                    id: data.id,
+                    name: data.name,
+                    manager_id: data.manager_id,
+                    tournament_id: data.tournament_id
+                };
             },
-            error: () => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el equipo' });
-                this.loading = false;
-            }
+            error: () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar el equipo.' })
         });
     }
 
-    private loadedCount = 0;
-    loadExtraData() {
-        this.loadingExtra = true;
-        this.loadedCount = 0;
-
-        this.tournamentService.getTournaments().subscribe({
-            next: (res) => {
-                this.tournaments = res.data || [];
-                this.checkExtraLoading();
-            },
-            error: () => this.checkExtraLoading()
-        });
-
-        this.userService.getUsers().subscribe({
-            next: (res) => {
-                this.managers = res.data || [];
-                this.checkExtraLoading();
-            },
-            error: () => this.checkExtraLoading()
-        });
-    }
-
-    private checkExtraLoading() {
-        this.loadedCount++;
-        if (this.loadedCount >= 2) {
-            this.loadingExtra = false;
-        }
-    }
-
-    saveTeam() {
+    save() {
         if (!this.team.name?.trim()) {
-            this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'El nombre es obligatorio' });
+            this.messageService.add({ severity: 'warn', summary: 'Falta el nombre', detail: 'El equipo necesita un nombre.' });
+            return;
+        }
+        if (!this.isManager() && !this.team.manager_id) {
+            this.messageService.add({ severity: 'warn', summary: 'Falta el delegado', detail: 'Selecciona quién gestiona el equipo.' });
             return;
         }
 
-        this.loading = true;
-
-        const request: TeamRequest = {
-            name: this.team.name,
-            tournament_id: this.team.tournament_id,
-            manager_id: this.team.manager_id
+        this.saving.set(true);
+        const payload: TeamRequest = {
+            name: this.team.name.trim(),
+            manager_id: this.team.manager_id,
+            tournament_id: this.team.tournament_id ?? null
         };
 
-        const observable = this.isEdit
-            ? this.teamService.updateTeam(this.team.id!, request)
-            : this.teamService.createTeam(request);
+        const request = this.isEdit
+            ? this.teamService.updateTeam(this.team.id!, payload)
+            : this.teamService.createTeam(payload);
 
-        observable.subscribe({
+        request.subscribe({
             next: () => {
-                this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Equipo ${this.isEdit ? 'actualizado' : 'creado'} correctamente` });
-                setTimeout(() => this.router.navigate(['/pages/teams']), 1500);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Guardado',
+                    detail: `Equipo ${this.isEdit ? 'actualizado' : 'creado'} correctamente.`
+                });
+                setTimeout(() => this.router.navigate(['/pages/teams']), 900);
             },
             error: (err) => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'Ocurrió un error al guardar' });
-                this.loading = false;
+                this.saving.set(false);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'No se pudo guardar',
+                    detail: err.error?.message ?? 'Inténtalo de nuevo.'
+                });
             }
         });
     }

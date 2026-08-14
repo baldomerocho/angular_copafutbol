@@ -1,15 +1,18 @@
-import { UserResponse } from "./user.interface";
+import { UserResponse } from './user.interface';
 
 export interface LoginRequest {
     email: string;
     password: string;
 }
 
+/**
+ * Public sign-up carries no role: the API always creates a manager. Elevated
+ * accounts are created from the user management screen by someone authorized.
+ */
 export interface RegisterRequest {
-    email: string;
     name: string;
+    email: string;
     password: string;
-    role?: string;
 }
 
 export interface LoginResponse {

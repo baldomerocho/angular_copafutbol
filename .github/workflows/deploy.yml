@@ -1,0 +1,141 @@
+name: Build and deploy
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.version.outputs.new_version }}
+      should_release: ${{ steps.version.outputs.should_release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # tags are needed to work out the next version
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Check formatting
+        run: npx prettier --check "src/**/*.{ts,html,scss,css}"
+        continue-on-error: true
+
+      - name: Lint
+        run: npx ng lint
+        continue-on-error: true
+
+      - name: Determine version
+        id: version
+        if: github.event_name == 'push'
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          set -euo pipefail
+          current=$(git tag --list 'v*' \
+            | sed 's/^v*//' \
+            | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+            | sort -t. -k1,1n -k2,2n -k3,3n \
+            | tail -n1)
+          if [ -z "$current" ]; then
+            current=$(node -p "require('./package.json').version.match(/^\d+\.\d+\.\d+/)[0]")
+          fi
+
+          msg=$(printf '%s' "$COMMIT_MSG" | tr '[:upper:]' '[:lower:]')
+          if printf '%s' "$msg" | grep -qE '\[(skip|no) ?version\]'; then
+            echo "should_release=false" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+
+          if   printf '%s' "$msg" | grep -qE '\[change major\]'; then bump=major
+          elif printf '%s' "$msg" | grep -qE '\[change minor\]'; then bump=minor
+          elif printf '%s' "$msg" | grep -qE '\[change patch\]'; then bump=patch
+          else bump=patch; fi
+
+          IFS=. read -r MA MI PA <<< "$current"
+          case "$bump" in
+            major) MA=$((MA+1)); MI=0; PA=0 ;;
+            minor) MI=$((MI+1)); PA=0 ;;
+            patch) PA=$((PA+1)) ;;
+          esac
+
+          new="$MA.$MI.$PA"
+          echo "new_version=$new" >> "$GITHUB_OUTPUT"
+          echo "should_release=true" >> "$GITHUB_OUTPUT"
+          echo "Next version: v$new (from v$current, bump=$bump)"
+
+      - name: Stamp the version
+        if: steps.version.outputs.should_release == 'true'
+        env:
+          NEW_VERSION: ${{ steps.version.outputs.new_version }}
+        run: npm version "${NEW_VERSION}" --no-git-tag-version --allow-same-version
+
+      - name: Build
+        env:
+          # GitHub Pages serves the app from /<repo>/, so the base href has to match.
+          BASE_HREF: /${{ github.event.repository.name }}/
+        run: npx ng build --configuration production --base-href "$BASE_HREF"
+
+      - name: Add the SPA fallback
+        # Pages has no rewrite rules: a copy of index.html as 404.html makes deep
+        # links work. Vercel and Cloudflare Pages use their own config instead.
+        run: cp dist/sakai-ng/browser/index.html dist/sakai-ng/browser/404.html
+
+      - name: Disable Jekyll processing
+        run: touch dist/sakai-ng/browser/.nojekyll
+
+      - name: Upload the Pages artifact
+        if: github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/sakai-ng/browser
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  tag:
+    name: Publish version tag
+    if: needs.build.outputs.should_release == 'true'
+    needs: [build, deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Tag
+        env:
+          NEW_VERSION: ${{ needs.build.outputs.new_version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag "v${NEW_VERSION}"
+          git push origin "v${NEW_VERSION}"
