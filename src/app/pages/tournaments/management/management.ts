@@ -182,7 +182,18 @@ import { TournamentService } from '../../service/tournament.service';
                                 <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
                                     <label class="font-medium">Partidos por llave</label>
                                     <p-inputnumber [(ngModel)]="tournament.knockout_legs" [min]="1" [max]="2" [showButtons]="true" />
-                                    <small class="text-muted-color">1 = partido único, 2 = ida y vuelta.</small>
+                                    <small class="text-muted-color">1 = partido único, 2 = ida y vuelta. La final siempre es a un partido.</small>
+                                </div>
+
+                                <div class="col-span-12 flex flex-col gap-2">
+                                    <label class="font-medium">Si una llave termina empatada</label>
+                                    <p-multiselect [options]="catalog('knockout_tiebreaks')" [(ngModel)]="knockoutTiebreakList"
+                                                   optionLabel="name" optionValue="id" display="chip" appendTo="body"
+                                                   placeholder="Selecciona los criterios en orden" />
+                                    <small class="text-muted-color">
+                                        Orden actual: {{ knockoutSummary() }}. Sin criterios, el organizador tiene que
+                                        registrar el desempate a mano.
+                                    </small>
                                 </div>
                             </div>
                         </p-fluid>
@@ -234,15 +245,46 @@ import { TournamentService } from '../../service/tournament.service';
                                 <div class="col-span-12"><p-divider /></div>
 
                                 <div class="col-span-12">
-                                    <div class="font-medium text-lg mb-1">Plantillas</div>
+                                    <div class="font-medium text-lg mb-1">Plantillas e inscripción de jugadores</div>
+                                    <p class="text-muted-color text-sm mt-0">Quién puede ser inscrito y cuántos.</p>
                                 </div>
                                 <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
                                     <label class="font-medium">Jugadores mínimos</label>
                                     <p-inputnumber [(ngModel)]="tournament.min_players_per_team" [min]="1" [max]="30" [showButtons]="true" />
+                                    <small class="text-muted-color">Un equipo con menos no puede inscribirse.</small>
                                 </div>
                                 <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
                                     <label class="font-medium">Jugadores máximos</label>
                                     <p-inputnumber [(ngModel)]="tournament.max_players_per_team" [min]="1" [max]="60" [showButtons]="true" />
+                                </div>
+
+                                <div class="col-span-12 md:col-span-6 flex items-center gap-3">
+                                    <p-toggleswitch [(ngModel)]="tournament.unique_player_per_tournament" inputId="uniquePlayer" />
+                                    <label for="uniquePlayer" class="cursor-pointer">
+                                        <span class="font-medium">Un jugador, un equipo</span>
+                                        <div class="text-muted-color text-sm">
+                                            Impide que la misma persona juegue en dos equipos de este torneo.
+                                            Desactívalo si corres primera y reserva juntas.
+                                        </div>
+                                    </label>
+                                </div>
+                                <div class="col-span-12 md:col-span-6 flex items-center gap-3">
+                                    <p-toggleswitch [(ngModel)]="tournament.require_player_document" inputId="requireDoc" />
+                                    <label for="requireDoc" class="cursor-pointer">
+                                        <span class="font-medium">Exigir documento (DPI)</span>
+                                        <div class="text-muted-color text-sm">Sin documento no se puede inscribir al jugador.</div>
+                                    </label>
+                                </div>
+
+                                <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
+                                    <label class="font-medium">Edad mínima</label>
+                                    <p-inputnumber [(ngModel)]="tournament.min_player_age" [min]="0" [max]="80" [showButtons]="true" />
+                                    <small class="text-muted-color">0 = sin límite.</small>
+                                </div>
+                                <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
+                                    <label class="font-medium">Edad máxima</label>
+                                    <p-inputnumber [(ngModel)]="tournament.max_player_age" [min]="0" [max]="80" [showButtons]="true" />
+                                    <small class="text-muted-color">0 = sin límite.</small>
                                 </div>
                             </div>
                         </p-fluid>
@@ -390,6 +432,7 @@ export class TournamentManagement implements OnInit {
     endDate?: Date;
     paymentDeadline?: Date | null;
     tiebreakerList: string[] = DEFAULT_TOURNAMENT_RULES.tiebreakers.split(',');
+    knockoutTiebreakList: string[] = DEFAULT_TOURNAMENT_RULES.knockout_tiebreaks.split(',');
     schedulingDay = String(DEFAULT_TOURNAMENT_RULES.scheduling_day);
 
     ngOnInit() {
@@ -420,6 +463,11 @@ export class TournamentManagement implements OnInit {
         return this.tiebreakerList.map((id) => this.catalogService.label('tiebreakers', id)).join(' → ');
     }
 
+    knockoutSummary(): string {
+        if (!this.knockoutTiebreakList.length) return 'sin resolución automática';
+        return this.knockoutTiebreakList.map((id) => this.catalogService.label('knockout_tiebreaks', id)).join(' → ');
+    }
+
     addExtraPrice() {
         this.tournament.extra_prices = [...(this.tournament.extra_prices ?? []), { name: '', amount: 0 }];
     }
@@ -440,6 +488,7 @@ export class TournamentManagement implements OnInit {
                 this.endDate = data.end_date ? new Date(data.end_date) : undefined;
                 this.paymentDeadline = data.payment_deadline ? new Date(data.payment_deadline) : null;
                 this.tiebreakerList = (data.tiebreakers || '').split(',').filter(Boolean);
+                this.knockoutTiebreakList = (data.knockout_tiebreaks || '').split(',').filter(Boolean);
                 this.schedulingDay = String(data.scheduling_day ?? 6);
             },
             error: () =>
@@ -463,6 +512,7 @@ export class TournamentManagement implements OnInit {
             end_date: this.endDate?.toISOString(),
             payment_deadline: this.paymentDeadline ? this.paymentDeadline.toISOString() : null,
             tiebreakers: this.tiebreakerList.join(','),
+            knockout_tiebreaks: this.knockoutTiebreakList.join(','),
             scheduling_day: Number(this.schedulingDay),
             extra_prices: (this.tournament.extra_prices ?? []).filter((extra) => extra.name?.trim())
         };

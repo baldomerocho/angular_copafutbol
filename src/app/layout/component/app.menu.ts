@@ -42,6 +42,7 @@ export class AppMenu implements OnInit {
                 label: 'Competición',
                 items: [
                     { label: 'Torneos', icon: 'pi pi-fw pi-trophy', routerLink: ['/pages/tournaments'], roles: ['staff', 'admin'] },
+                    { label: 'Clubes', icon: 'pi pi-fw pi-building', routerLink: ['/pages/clubs'] },
                     { label: 'Equipos', icon: 'pi pi-fw pi-users', routerLink: ['/pages/teams'] },
                     { label: 'Partidos', icon: 'pi pi-fw pi-calendar', routerLink: ['/pages/matches'] },
                     { label: 'Sanciones', icon: 'pi pi-fw pi-ban', routerLink: ['/pages/suspensions'], roles: ['staff', 'admin'] },

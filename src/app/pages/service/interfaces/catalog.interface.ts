@@ -22,7 +22,10 @@ export interface CatalogsResponse {
     payment_types: SimpleRelation[];
     user_roles: SimpleRelation[];
     tiebreakers: SimpleRelation[];
+    knockout_tiebreaks: SimpleRelation[];
     lineup_positions: SimpleRelation[];
+    player_positions: SimpleRelation[];
+    team_divisions: SimpleRelation[];
     weekdays: SimpleRelation[];
 }
 

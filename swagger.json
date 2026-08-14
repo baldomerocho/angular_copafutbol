@@ -23,7 +23,7 @@
                         "Bearer": []
                     }
                 ],
-                "description": "Retrieve system-wide audit logs (Admin only)",
+                "description": "Retrieve system-wide audit logs (Admin only). This table only grows,\nso it is paginated and filterable by entity and by actor.",
                 "produces": [
                     "application/json"
                 ],
@@ -31,6 +31,38 @@
                     "admin"
                 ],
                 "summary": "Get all audit logs",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Rows per page (max 200)",
+                        "name": "per_page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by entity, e.g. match",
+                        "name": "entity",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by action",
+                        "name": "action",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by the user who acted",
+                        "name": "user_id",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -5089,6 +5121,10 @@
                 "active": {
                     "type": "boolean"
                 },
+                "division": {
+                    "type": "string",
+                    "example": "Primera"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -5114,6 +5150,10 @@
                 },
                 "team_id": {
                     "type": "integer"
+                },
+                "team_name": {
+                    "type": "string",
+                    "example": "Deportivo Central"
                 }
             }
         },

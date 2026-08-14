@@ -9,7 +9,7 @@ import { DatePickerModule } from 'primeng/datepicker';
 import { DialogModule } from 'primeng/dialog';
 import { FluidModule } from 'primeng/fluid';
 import { SelectModule } from 'primeng/select';
-import { TableModule } from 'primeng/table';
+import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { ToolbarModule } from 'primeng/toolbar';
@@ -55,16 +55,20 @@ import { matchStatusSeverity } from '../shared/status';
             </p-toolbar>
 
             <div class="flex flex-wrap gap-3 mb-4">
-                <p-select [options]="tournaments()" [(ngModel)]="tournamentFilter" (onChange)="load()"
+                <p-select [options]="tournaments()" [(ngModel)]="tournamentFilter" (onChange)="reload()"
                           optionLabel="name" optionValue="id" placeholder="Todos los torneos"
                           [showClear]="true" styleClass="w-full sm:w-64" />
-                <p-select [options]="statusOptions()" [(ngModel)]="statusFilter" (onChange)="load()"
+                <p-select [options]="statusOptions()" [(ngModel)]="statusFilter" (onChange)="reload()"
                           optionLabel="name" optionValue="id" placeholder="Todos los estados"
                           [showClear]="true" styleClass="w-full sm:w-52" />
             </div>
 
-            <p-table [value]="matches()" [rows]="15" [paginator]="matches().length > 15"
-                     [loading]="loading()" responsiveLayout="scroll" dataKey="id">
+            <!-- Server-side: a full season is thousands of matches. -->
+            <p-table [value]="matches()" [lazy]="true" (onLazyLoad)="loadPage($event)"
+                     [paginator]="true" [rows]="perPage" [totalRecords]="total()" [first]="first"
+                     [rowsPerPageOptions]="[15, 30, 60]" [loading]="loading()"
+                     currentPageReportTemplate="{first} - {last} de {totalRecords}" [showCurrentPageReport]="true"
+                     responsiveLayout="scroll" dataKey="id">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Fecha</th>
@@ -200,6 +204,9 @@ export class Matches implements OnInit {
 
     tournamentFilter?: number;
     statusFilter?: string;
+    first = 0;
+    perPage = 15;
+    readonly total = signal(0);
 
     matchDialog = false;
     editing = false;
@@ -223,7 +230,7 @@ export class Matches implements OnInit {
                 this.fields.set(fields.data ?? []);
             }
         });
-        this.load();
+        // The lazy table fires onLazyLoad on init; that is what loads the first page.
     }
 
     canEdit(): boolean {
@@ -250,11 +257,32 @@ export class Matches implements OnInit {
         return matchStatusSeverity(status);
     }
 
+    /** Fired by the table on paginate, and once on init to load the first page. */
+    loadPage(event: TableLazyLoadEvent) {
+        this.first = event.first ?? 0;
+        this.perPage = event.rows ?? this.perPage;
+        this.load();
+    }
+
+    /** A narrower filter makes the current offset meaningless. */
+    reload() {
+        this.first = 0;
+        this.load();
+    }
+
     load() {
         this.loading.set(true);
-        this.matchService.getMatches({ tournament_id: this.tournamentFilter, status: this.statusFilter }).subscribe({
+        this.matchService
+            .getMatches({
+                tournament_id: this.tournamentFilter,
+                status: this.statusFilter,
+                page: Math.floor(this.first / this.perPage) + 1,
+                per_page: this.perPage
+            })
+            .subscribe({
             next: (res) => {
                 this.matches.set(res.data ?? []);
+                this.total.set(res.meta?.total ?? (res.data ?? []).length);
                 this.loading.set(false);
             },
             error: () => {

@@ -6,7 +6,8 @@ import { DialogModule } from 'primeng/dialog';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
-import { TableModule } from 'primeng/table';
+import { SelectModule } from 'primeng/select';
+import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ToolbarModule } from 'primeng/toolbar';
 import { AuditLogResponse, AuditService } from '../service/audit.service';
@@ -18,7 +19,7 @@ import { Severity } from '../shared/status';
     standalone: true,
     imports: [
         CommonModule, FormsModule, TableModule, ButtonModule, ToolbarModule, TagModule,
-        DialogModule, InputTextModule, IconFieldModule, InputIconModule
+        DialogModule, InputTextModule, IconFieldModule, InputIconModule, SelectModule
     ],
     template: `
         <div class="card">
@@ -34,14 +35,26 @@ import { Severity } from '../shared/status';
                 </ng-template>
             </p-toolbar>
 
-            <p-iconfield class="mb-4 block max-w-md">
-                <p-inputicon class="pi pi-search" />
-                <input pInputText type="text" placeholder="Buscar por acción, entidad o usuario" class="w-full"
-                       (input)="applySearch($any($event.target).value)" />
-            </p-iconfield>
+            <div class="flex flex-wrap gap-3 mb-4">
+                <p-select [options]="entities" [(ngModel)]="entity" placeholder="Toda entidad" appendTo="body"
+                          [showClear]="true" (onChange)="reload()" styleClass="w-48" />
+                <p-iconfield class="flex-1 max-w-md">
+                    <p-inputicon class="pi pi-search" />
+                    <input pInputText type="text" placeholder="Filtrar la página por acción o usuario" class="w-full"
+                           (input)="applySearch($any($event.target).value)" />
+                </p-iconfield>
+            </div>
 
-            <p-table [value]="filtered()" [rows]="20" [paginator]="filtered().length > 20"
-                     [loading]="loading()" responsiveLayout="scroll" dataKey="id">
+            <!--
+                The bitácora only grows, so the server pages it. The search box filters
+                the page you are looking at; the entity picker filters the whole table.
+            -->
+            <p-table [value]="filtered()" [lazy]="true" (onLazyLoad)="loadPage($event)"
+                     [paginator]="true" [rows]="perPage" [totalRecords]="total()" [first]="first"
+                     [rowsPerPageOptions]="[20, 50, 100]" [loading]="loading()"
+                     currentPageReportTemplate="{first} - {last} de {totalRecords}"
+                     [showCurrentPageReport]="true"
+                     responsiveLayout="scroll" dataKey="id">
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width: 12rem">Fecha</th>
@@ -108,26 +121,53 @@ export class AuditLogs implements OnInit {
 
     readonly logs = signal<AuditLogResponse[]>([]);
     readonly filtered = signal<AuditLogResponse[]>([]);
+    readonly total = signal(0);
     readonly loading = signal(true);
+
+    /** The entities the API writes trail entries for. */
+    readonly entities = ['tournament', 'match', 'match_event', 'suspension', 'payment', 'team', 'user'];
 
     detailDialog = false;
     selected: AuditLogResponse | null = null;
+    entity?: string;
+    first = 0;
+    perPage = 20;
     private search = '';
 
     ngOnInit() {
+        // p-table fires onLazyLoad on init, which is what loads the first page.
+    }
+
+    /** Called by the table on paginate, and by us after a filter change. */
+    loadPage(event: TableLazyLoadEvent) {
+        this.first = event.first ?? 0;
+        this.perPage = event.rows ?? this.perPage;
+        this.load();
+    }
+
+    /** Back to page one — a narrower filter makes the old offset meaningless. */
+    reload() {
+        this.first = 0;
         this.load();
     }
 
     load() {
         this.loading.set(true);
-        this.auditService.getLogs().subscribe({
-            next: (res) => {
-                this.logs.set(res.data ?? []);
-                this.applySearch(this.search);
-                this.loading.set(false);
-            },
-            error: () => this.loading.set(false)
-        });
+        this.auditService
+            .getLogs({
+                page: Math.floor(this.first / this.perPage) + 1,
+                per_page: this.perPage,
+                entity: this.entity
+            })
+            .subscribe({
+                next: (res) => {
+                    this.logs.set(res.data ?? []);
+                    this.total.set(res.meta?.total ?? (res.data ?? []).length);
+                    this.applySearch(this.search);
+                    this.loading.set(false);
+                },
+                error: () => this.loading.set(false)
+            });
     }
 
     applySearch(term: string) {

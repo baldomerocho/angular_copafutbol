@@ -38,7 +38,12 @@ const MANAGEMENT: Routes = [
         data: { roles: ['manager', 'staff', 'admin'] }
     },
 
-    // --- Teams ---
+    // --- Clubs and teams ---
+    {
+        path: 'clubs',
+        loadComponent: () => import('./clubs/clubs').then((m) => m.Clubs),
+        data: { roles: ['manager', 'staff', 'admin'] }
+    },
     {
         path: 'teams',
         loadComponent: () => import('./teams/teams').then((m) => m.Teams),

@@ -13,3 +13,9 @@ export interface BaseResponse<T> {
     message?: string;
     meta?: PaginationMeta;
 }
+
+/** What a table asks the API for. Omit both and the API returns everything. */
+export interface Paging {
+    page?: number;
+    per_page?: number;
+}

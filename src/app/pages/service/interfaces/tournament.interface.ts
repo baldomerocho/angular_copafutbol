@@ -27,9 +27,18 @@ export interface TournamentRules {
     yellow_suspension_games: number;
     red_suspension_games: number;
 
+    /** Ordered chain applied when a knockout tie ends level. */
+    knockout_tiebreaks: string;
+
     // Squads
     min_players_per_team: number;
     max_players_per_team: number;
+    /** Stops one person appearing for two squads of the same competition. */
+    unique_player_per_tournament: boolean;
+    /** Demands a national identity document before a player can be rostered. */
+    require_player_document: boolean;
+    min_player_age: number;
+    max_player_age: number;
 
     // Scheduling
     scheduling_day: number;
@@ -129,8 +138,14 @@ export const DEFAULT_TOURNAMENT_RULES: TournamentRules = {
     yellow_suspension_games: 1,
     red_suspension_games: 1,
 
+    knockout_tiebreaks: 'extra_time,penalties',
+
     min_players_per_team: 7,
     max_players_per_team: 25,
+    unique_player_per_tournament: true,
+    require_player_document: false,
+    min_player_age: 0,
+    max_player_age: 0,
 
     scheduling_day: 6,
     scheduling_start_hour: 9,

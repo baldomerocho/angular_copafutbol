@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiBase } from './api.base';
-import { BaseResponse } from './interfaces/base.interface';
+import { BaseResponse, Paging } from './interfaces/base.interface';
 import {
     BracketRound,
     LineupBulkRequest,
@@ -18,7 +18,7 @@ import {
     SuspensionUpdateRequest
 } from './interfaces/match.interface';
 
-export interface MatchFilters {
+export interface MatchFilters extends Paging {
     tournament_id?: number;
     team_id?: number;
     group_id?: number;

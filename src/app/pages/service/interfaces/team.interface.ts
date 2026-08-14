@@ -5,35 +5,107 @@ export interface SimpleRelation {
     name: string;
 }
 
+/** A club is the institution; it fields one team per division. */
+export interface ClubResponse {
+    id: number;
+    name: string;
+    short_name?: string;
+    logo_url?: string;
+    location?: string;
+    founded_in?: number;
+    manager_id?: number;
+    manager?: UserResponse;
+    teams?: TeamResponse[];
+    team_count: number;
+    created_at?: string;
+}
+
+export interface ClubRequest {
+    name: string;
+    short_name?: string;
+    logo_url?: string;
+    location?: string;
+    founded_in?: number;
+    manager_id?: number;
+}
+
+/** A team is one squad of a club — its first division, its reserves, its U-17s. */
 export interface TeamResponse {
     id: number;
     name: string;
+    division?: string;
+    club_id?: number;
+    club?: SimpleRelation;
     manager_id?: number;
     tournament_id?: number;
-    created_at?: string;
-    updated_at?: string;
     manager?: UserResponse;
     tournament?: SimpleRelation;
-    players?: PlayerResponse[];
+    roster?: RosterEntryResponse[];
+    player_count: number;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface TeamRequest {
-    name: string;
+    name?: string;
+    division?: string;
+    club_id?: number | null;
     tournament_id?: number | null;
     manager_id?: number;
 }
 
+/** A player is a person, independent of any squad. */
 export interface PlayerResponse {
     id: number;
     name: string;
-    team_id: number;
-    number: number;
+    document?: string;
+    birth_date?: string | null;
+    age?: number;
+    position?: string;
+    photo_url?: string;
+    phone?: string;
     created_at?: string;
 }
 
 export interface PlayerRequest {
     name: string;
+    document?: string;
+    birth_date?: string | null;
+    position?: string;
+    photo_url?: string;
+    phone?: string;
+}
+
+/** A roster entry: this person wears this number for this squad. */
+export interface RosterEntryResponse {
+    id: number;
+    team_id: number;
+    /** Only filled where the squad is not implied by the request — the player's card. */
+    team_name?: string;
+    division?: string;
+    player_id: number;
+    player: PlayerResponse;
     number: number;
+    position?: string;
+    is_captain: boolean;
+    active: boolean;
+    suspended: boolean;
+}
+
+/**
+ * Registering a player: pass player_id for someone already in the system, or
+ * their details to create and register them at once — the document is what
+ * decides whether the person already exists.
+ */
+export interface RosterEntryRequest {
+    player_id?: number;
+    name?: string;
+    document?: string;
+    birth_date?: string | null;
+    phone?: string;
+    number: number;
+    position?: string;
+    is_captain?: boolean;
 }
 
 /** Payment progress of one enrolled team, used by the arrears panel. */

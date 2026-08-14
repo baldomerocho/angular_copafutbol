@@ -2,9 +2,16 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiBase } from './api.base';
 import { BaseResponse } from './interfaces/base.interface';
-import { MonitoringTeamStatus, PlayerRequest, PlayerResponse, TeamRequest, TeamResponse } from './interfaces/team.interface';
+import {
+    MonitoringTeamStatus,
+    RosterEntryRequest,
+    RosterEntryResponse,
+    TeamRequest,
+    TeamResponse
+} from './interfaces/team.interface';
+import { Paging } from './interfaces/base.interface';
 
-export interface TeamFilters {
+export interface TeamFilters extends Paging {
     tournament_id?: number;
     unassigned?: boolean;
 }
@@ -50,22 +57,26 @@ export class TeamService extends ApiBase {
         });
     }
 
-    // --- Players ---
+    // --- Roster ---
+    //
+    // A roster entry is the pairing of a person with a shirt for this squad. The
+    // person exists independently, which is why removing them from a squad does
+    // not delete them.
 
-    getPlayers(teamId: number): Observable<BaseResponse<PlayerResponse[]>> {
-        return this.http.get<BaseResponse<PlayerResponse[]>>(this.pub(`/teams/${teamId}/players`));
+    getRoster(teamId: number): Observable<BaseResponse<RosterEntryResponse[]>> {
+        return this.http.get<BaseResponse<RosterEntryResponse[]>>(this.pub(`/teams/${teamId}/players`));
     }
 
-    addPlayer(teamId: number, player: PlayerRequest): Observable<BaseResponse<PlayerResponse>> {
-        return this.http.post<BaseResponse<PlayerResponse>>(this.scoped(`/teams/${teamId}/players`), player);
+    registerPlayer(teamId: number, entry: RosterEntryRequest): Observable<BaseResponse<RosterEntryResponse>> {
+        return this.http.post<BaseResponse<RosterEntryResponse>>(this.scoped(`/teams/${teamId}/players`), entry);
     }
 
-    updatePlayer(teamId: number, playerId: number, player: PlayerRequest): Observable<BaseResponse<PlayerResponse>> {
-        return this.http.put<BaseResponse<PlayerResponse>>(this.scoped(`/teams/${teamId}/players/${playerId}`), player);
+    updateRosterEntry(teamId: number, playerId: number, entry: RosterEntryRequest): Observable<BaseResponse<RosterEntryResponse>> {
+        return this.http.put<BaseResponse<RosterEntryResponse>>(this.scoped(`/teams/${teamId}/players/${playerId}`), entry);
     }
 
-    deletePlayer(teamId: number, playerId: number): Observable<BaseResponse<PlayerResponse>> {
-        return this.http.delete<BaseResponse<PlayerResponse>>(this.scoped(`/teams/${teamId}/players/${playerId}`));
+    removePlayer(teamId: number, playerId: number): Observable<BaseResponse<string>> {
+        return this.http.delete<BaseResponse<string>>(this.scoped(`/teams/${teamId}/players/${playerId}`));
     }
 
     // --- Public ---

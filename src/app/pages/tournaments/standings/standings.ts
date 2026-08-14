@@ -120,19 +120,38 @@ import { formResultClass } from '../../shared/status';
                                     <th style="width: 3rem">#</th>
                                     <th>Jugador</th>
                                     <th>Equipo</th>
+                                    <th class="text-center" pTooltip="Partidos jugados" tooltipPosition="top">PJ</th>
                                     <th class="text-center">Goles</th>
+                                    <th class="text-center" pTooltip="De penal" tooltipPosition="top">(P)</th>
+                                    <th class="text-center">Asist.</th>
+                                    <th class="text-center" pTooltip="Goles por partido" tooltipPosition="top">G/PJ</th>
                                 </tr>
                             </ng-template>
-                            <ng-template pTemplate="body" let-player let-i="rowIndex">
+                            <ng-template pTemplate="body" let-player>
                                 <tr>
-                                    <td class="tabular-nums">{{ i + 1 }}</td>
-                                    <td class="font-medium">{{ player.player_name }} <span class="text-muted-color text-sm">#{{ player.player_number }}</span></td>
+                                    <td class="tabular-nums">{{ player.rank }}</td>
+                                    <td>
+                                        <a [routerLink]="['/publico/jugadores', player.player_id]"
+                                           class="font-medium no-underline text-color hover:underline">
+                                            {{ player.player_name }}
+                                        </a>
+                                        <span class="text-muted-color text-sm">#{{ player.player_number }}</span>
+                                        @if (player.suspended) {
+                                            <i class="pi pi-ban text-red-500 text-xs ml-2" pTooltip="Sancionado" tooltipPosition="top"></i>
+                                        }
+                                    </td>
                                     <td>{{ player.team_name }}</td>
+                                    <td class="text-center tabular-nums text-muted-color">{{ player.matches_played }}</td>
                                     <td class="text-center font-bold tabular-nums">{{ player.goals }}</td>
+                                    <td class="text-center tabular-nums text-muted-color">
+                                        {{ player.penalty_goals || '—' }}
+                                    </td>
+                                    <td class="text-center tabular-nums">{{ player.assists }}</td>
+                                    <td class="text-center tabular-nums text-muted-color">{{ player.goals_per_match }}</td>
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="emptymessage">
-                                <tr><td colspan="4" class="text-center py-6 text-muted-color">Sin goles registrados.</td></tr>
+                                <tr><td colspan="8" class="text-center py-6 text-muted-color">Sin goles registrados.</td></tr>
                             </ng-template>
                         </p-table>
                     </p-tabpanel>

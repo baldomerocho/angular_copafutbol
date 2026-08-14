@@ -13,6 +13,7 @@ import { SelectModule } from 'primeng/select';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { TooltipModule } from 'primeng/tooltip';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
@@ -25,7 +26,7 @@ import {
     MatchResponse,
     MatchStatus
 } from '../../service/interfaces/match.interface';
-import { PlayerResponse } from '../../service/interfaces/team.interface';
+import { RosterEntryResponse } from '../../service/interfaces/team.interface';
 import { MatchService } from '../../service/match.service';
 import { TeamService } from '../../service/team.service';
 import { eventTypeSeverity, matchStatusSeverity } from '../../shared/status';
@@ -41,7 +42,7 @@ import { eventTypeSeverity, matchStatusSeverity } from '../../shared/status';
     imports: [
         CommonModule, FormsModule, RouterModule, ButtonModule, SelectModule, SelectButtonModule,
         InputNumberModule, InputTextModule, DialogModule, ToastModule, ConfirmDialogModule,
-        TagModule, TooltipModule, MessageModule
+        TagModule, TooltipModule, MessageModule, ToggleSwitchModule
     ],
     providers: [MessageService, ConfirmationService],
     template: `
@@ -78,6 +79,13 @@ import { eventTypeSeverity, matchStatusSeverity } from '../../shared/status';
                         <div class="text-4xl md:text-5xl font-bold tabular-nums">
                             {{ match()!.home_score }} <span class="text-muted-color">-</span> {{ match()!.away_score }}
                         </div>
+                        @if (match()!.went_to_penalties) {
+                            <div class="text-sm font-medium mt-1">
+                                Penales {{ match()!.home_penalties }} - {{ match()!.away_penalties }}
+                            </div>
+                        } @else if (match()!.went_to_extra_time) {
+                            <div class="text-sm text-muted-color mt-1">Tras tiempo extra</div>
+                        }
                         <div class="text-muted-color text-sm mt-1">{{ match()!.estimated_start_time | date: 'dd MMM · HH:mm' }}</div>
                         <div class="text-muted-color text-xs">{{ match()!.field_name }}</div>
                     </div>
@@ -100,6 +108,10 @@ import { eventTypeSeverity, matchStatusSeverity } from '../../shared/status';
                         @if (match()!.status === 'finished') {
                             <p-button label="Reabrir" icon="pi pi-undo" severity="secondary" [outlined]="true"
                                       (onClick)="setStatus('live')" [loading]="working()" />
+                        }
+                        @if (isKnockout()) {
+                            <p-button label="Definición" icon="pi pi-bullseye" severity="secondary" [outlined]="true"
+                                      (onClick)="openShootout()" />
                         }
                         @if (match()!.status !== 'canceled' && match()!.status !== 'finished') {
                             <p-button label="Cancelar partido" icon="pi pi-times" severity="danger" [outlined]="true"
@@ -213,6 +225,46 @@ import { eventTypeSeverity, matchStatusSeverity } from '../../shared/status';
                 </div>
             </div>
 
+            <!-- Definición: tiempo extra y penales -->
+            <p-dialog [(visible)]="shootoutDialog" [style]="{ width: '460px' }" [modal]="true" header="Definición de la llave">
+                <div class="flex flex-col gap-4">
+                    <p-message severity="secondary" icon="pi pi-info-circle" styleClass="w-full">
+                        El tiempo extra se carga en el marcador como cualquier gol. Los penales se guardan aparte:
+                        deciden quién avanza sin alterar los goles a favor y en contra de la tabla.
+                    </p-message>
+
+                    <div class="flex items-center gap-3">
+                        <p-toggleswitch [(ngModel)]="shootout.went_to_extra_time" inputId="extraTime" />
+                        <label for="extraTime" class="cursor-pointer font-medium">Se jugó tiempo extra</label>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <p-toggleswitch [(ngModel)]="shootout.went_to_penalties" inputId="penalties" />
+                        <label for="penalties" class="cursor-pointer font-medium">Se definió por penales</label>
+                    </div>
+
+                    @if (shootout.went_to_penalties) {
+                        <div class="grid grid-cols-12 gap-3">
+                            <div class="col-span-6 flex flex-col gap-2">
+                                <label class="font-medium text-sm">{{ match()!.home_team_name }}</label>
+                                <p-inputnumber [(ngModel)]="shootout.home_penalties" [min]="0" [max]="30"
+                                               [showButtons]="true" class="w-full" />
+                            </div>
+                            <div class="col-span-6 flex flex-col gap-2">
+                                <label class="font-medium text-sm">{{ match()!.away_team_name }}</label>
+                                <p-inputnumber [(ngModel)]="shootout.away_penalties" [min]="0" [max]="30"
+                                               [showButtons]="true" class="w-full" />
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <ng-template pTemplate="footer">
+                    <p-button label="Cancelar" [text]="true" (onClick)="shootoutDialog = false" />
+                    <p-button label="Guardar" icon="pi pi-check" [loading]="working()" (onClick)="saveShootout()" />
+                </ng-template>
+            </p-dialog>
+
             <!-- Registrar evento -->
             <p-dialog [(visible)]="eventDialog" [style]="{ width: '480px' }" [modal]="true" header="Registrar evento">
                 <div class="flex flex-col gap-4">
@@ -254,10 +306,8 @@ import { eventTypeSeverity, matchStatusSeverity } from '../../shared/status';
                         <input pInputText [(ngModel)]="eventForm.description" placeholder="Gol de cabeza, juego brusco…" />
                     </div>
 
-                    @if (eventForm.type === 'yellow_card' || eventForm.type === 'red_card') {
-                        <p-message severity="secondary" icon="pi pi-info-circle" styleClass="w-full">
-                            Las suspensiones se aplican solas según las reglas del torneo.
-                        </p-message>
+                    @if (eventHint(); as hint) {
+                        <p-message severity="secondary" icon="pi pi-info-circle" styleClass="w-full">{{ hint }}</p-message>
                     }
                 </div>
 
@@ -284,12 +334,14 @@ export class MatchConsole implements OnInit {
     readonly loading = signal(true);
     readonly working = signal(false);
 
-    /** Squads by team id, so the event and lineup pickers never refetch. */
-    private readonly squads = signal<Record<number, PlayerResponse[]>>({});
+    /** Rosters by team id, so the event and lineup pickers never refetch. */
+    private readonly squads = signal<Record<number, RosterEntryResponse[]>>({});
 
     matchId!: number;
     selectedTeamId = 0;
     eventDialog = false;
+    shootoutDialog = false;
+    shootout = { went_to_extra_time: false, went_to_penalties: false, home_penalties: 0, away_penalties: 0 };
     newLineupPlayer?: number;
     newLineupPosition = '';
 
@@ -335,8 +387,8 @@ export class MatchConsole implements OnInit {
 
     private loadSquads(match: MatchResponse) {
         forkJoin({
-            home: this.teamService.getPlayers(match.home_team_id),
-            away: this.teamService.getPlayers(match.away_team_id)
+            home: this.teamService.getRoster(match.home_team_id),
+            away: this.teamService.getRoster(match.away_team_id)
         }).subscribe({
             next: ({ home, away }) => {
                 this.squads.set({
@@ -418,10 +470,12 @@ export class MatchConsole implements OnInit {
 
     // --- Lineup ---
 
-    /** Players of the selected team that are not already listed. */
-    selectablePlayers(): PlayerResponse[] {
+    /** Registered players of the selected squad that are not already listed. */
+    selectablePlayers(): { id: number; name: string }[] {
         const listed = new Set(this.lineup().map((entry) => entry.player_id));
-        return (this.squads()[this.selectedTeamId] ?? []).filter((player) => !listed.has(player.id));
+        return (this.squads()[this.selectedTeamId] ?? [])
+            .filter((entry) => !listed.has(entry.player_id))
+            .map((entry) => ({ id: entry.player_id, name: `${entry.number} · ${entry.player.name}` }));
     }
 
     addToLineup() {
@@ -481,12 +535,30 @@ export class MatchConsole implements OnInit {
         this.eventForm.player_id = null;
     }
 
-    eventPlayers(): PlayerResponse[] {
-        return this.squads()[this.eventForm.team_id] ?? [];
+    eventPlayers(): { id: number; name: string }[] {
+        return (this.squads()[this.eventForm.team_id] ?? [])
+            .map((entry) => ({ id: entry.player_id, name: `${entry.number} · ${entry.player.name}` }));
     }
 
     requiresPlayer(): boolean {
-        return ['goal', 'yellow_card', 'red_card'].includes(this.eventForm.type);
+        return ['goal', 'penalty_goal', 'own_goal', 'assist', 'yellow_card', 'red_card'].includes(this.eventForm.type);
+    }
+
+    /** Own goals move the scoreboard for the other side; say so before it happens. */
+    eventHint(): string {
+        switch (this.eventForm.type) {
+            case 'own_goal':
+                return 'El autogol suma al rival y no cuenta en la tabla de goleadores.';
+            case 'penalty_goal':
+                return 'Cuenta como gol del jugador y se contabiliza aparte como penal convertido.';
+            case 'assist':
+                return 'No mueve el marcador; alimenta la tabla de asistencias.';
+            case 'yellow_card':
+            case 'red_card':
+                return 'Las suspensiones se aplican solas según las reglas del torneo.';
+            default:
+                return '';
+        }
     }
 
     saveEvent() {
@@ -540,6 +612,49 @@ export class MatchConsole implements OnInit {
                     error: (err) =>
                         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message ?? 'No se pudo eliminar.' })
                 });
+            }
+        });
+    }
+
+    // --- Knockout tiebreak ---
+
+    /** Only knockout ties can be decided by extra time or a shootout. */
+    isKnockout(): boolean {
+        return this.canEdit() && (this.match()?.stage ?? 'group') !== 'group';
+    }
+
+    openShootout() {
+        const match = this.match()!;
+        this.shootout = {
+            went_to_extra_time: match.went_to_extra_time,
+            went_to_penalties: match.went_to_penalties,
+            home_penalties: match.home_penalties,
+            away_penalties: match.away_penalties
+        };
+        this.shootoutDialog = true;
+    }
+
+    saveShootout() {
+        if (this.shootout.went_to_penalties && this.shootout.home_penalties === this.shootout.away_penalties) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Penales empatados',
+                detail: 'Una tanda tiene que dar un ganador.'
+            });
+            return;
+        }
+
+        this.working.set(true);
+        this.matchService.updateMatch(this.matchId, this.shootout).subscribe({
+            next: () => {
+                this.working.set(false);
+                this.shootoutDialog = false;
+                this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Definición registrada.' });
+                this.load();
+            },
+            error: (err) => {
+                this.working.set(false);
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message ?? 'No se pudo guardar.' });
             }
         });
     }

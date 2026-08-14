@@ -59,6 +59,7 @@ import { TournamentService } from '../service/tournament.service';
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Equipo</th>
+                        <th>Club</th>
                         @if (!isManager()) { <th>Delegado</th> }
                         <th>Torneo</th>
                         <th class="text-center">Jugadores</th>
@@ -68,7 +69,19 @@ import { TournamentService } from '../service/tournament.service';
 
                 <ng-template pTemplate="body" let-team>
                     <tr>
-                        <td class="font-medium">{{ team.name }}</td>
+                        <td>
+                            <div class="font-medium">{{ team.name }}</div>
+                            @if (team.division) {
+                                <div class="text-muted-color text-xs">{{ team.division }}</div>
+                            }
+                        </td>
+                        <td class="text-sm">
+                            @if (team.club?.name) {
+                                {{ team.club.name }}
+                            } @else {
+                                <span class="text-muted-color">Independiente</span>
+                            }
+                        </td>
                         @if (!isManager()) {
                             <td class="text-sm text-muted-color">{{ team.manager?.name || '—' }}</td>
                         }
@@ -79,7 +92,7 @@ import { TournamentService } from '../service/tournament.service';
                                 <span class="text-muted-color text-sm">Sin inscribir</span>
                             }
                         </td>
-                        <td class="text-center tabular-nums">{{ team.players?.length || 0 }}</td>
+                        <td class="text-center tabular-nums">{{ team.player_count }}</td>
                         <td>
                             <div class="flex gap-1">
                                 <p-button icon="pi pi-id-card" [rounded]="true" [text]="true" severity="secondary"
@@ -102,7 +115,7 @@ import { TournamentService } from '../service/tournament.service';
 
                 <ng-template pTemplate="emptymessage">
                     <tr>
-                        <td [attr.colspan]="isManager() ? 4 : 5">
+                        <td [attr.colspan]="isManager() ? 5 : 6">
                             <div class="text-center py-10">
                                 <i class="pi pi-users text-4xl text-muted-color mb-3 block"></i>
                                 <div class="text-muted-color mb-4">Todavía no hay equipos.</div>
@@ -229,7 +242,14 @@ export class Teams implements OnInit {
         this.search = term ?? '';
         const needle = this.search.trim().toLowerCase();
         this.filtered.set(
-            needle ? this.teams().filter((team) => team.name.toLowerCase().includes(needle)) : this.teams()
+            needle
+                ? this.teams().filter(
+                      (team) =>
+                          team.name.toLowerCase().includes(needle) ||
+                          (team.club?.name ?? '').toLowerCase().includes(needle) ||
+                          (team.division ?? '').toLowerCase().includes(needle)
+                  )
+                : this.teams()
         );
     }
 

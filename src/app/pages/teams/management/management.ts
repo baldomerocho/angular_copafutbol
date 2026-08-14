@@ -12,6 +12,10 @@ import { ToastModule } from 'primeng/toast';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthService } from '../../service/auth.service';
+import { CatalogService } from '../../service/catalog.service';
+import { ClubService } from '../../service/club.service';
+import { ClubResponse } from '../../service/interfaces/team.interface';
+import { SimpleRelation } from '../../service/interfaces/catalog.interface';
 import { TeamRequest } from '../../service/interfaces/team.interface';
 import { TournamentResponse } from '../../service/interfaces/tournament.interface';
 import { UserResponse } from '../../service/interfaces/user.interface';
@@ -51,6 +55,24 @@ import { UserService } from '../../service/user.service';
                         <input pInputText [(ngModel)]="team.name" placeholder="Deportivo Central" />
                     </div>
 
+                    <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
+                        <label class="font-medium">Club</label>
+                        <p-select [options]="clubs()" [(ngModel)]="team.club_id" optionLabel="name" optionValue="id"
+                                  placeholder="Independiente" appendTo="body" [showClear]="true"
+                                  [filter]="true" filterBy="name" [loading]="loadingExtra()" />
+                        <small class="text-muted-color">
+                            Un club puede tener varios equipos, uno por división.
+                            <a routerLink="/pages/clubs" class="underline">Gestionar clubes</a>.
+                        </small>
+                    </div>
+
+                    <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
+                        <label class="font-medium">División</label>
+                        <p-select [options]="divisions()" [(ngModel)]="team.division" optionLabel="name" optionValue="id"
+                                  placeholder="Sin división" appendTo="body" [showClear]="true" [editable]="true" />
+                        <small class="text-muted-color">Primera, reserva, sub-17… lo que use tu liga.</small>
+                    </div>
+
                     @if (!isManager()) {
                         <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
                             <label class="font-medium">Delegado <span class="text-red-500">*</span></label>
@@ -79,6 +101,8 @@ import { UserService } from '../../service/user.service';
 })
 export class TeamManagement implements OnInit {
     private readonly teamService = inject(TeamService);
+    private readonly clubService = inject(ClubService);
+    private readonly catalogService = inject(CatalogService);
     private readonly tournamentService = inject(TournamentService);
     private readonly userService = inject(UserService);
     private readonly authService = inject(AuthService);
@@ -86,11 +110,12 @@ export class TeamManagement implements OnInit {
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
 
-    team: TeamRequest & { id?: number } = { name: '', tournament_id: undefined, manager_id: undefined };
+    team: TeamRequest & { id?: number } = { name: '', division: '', club_id: undefined, tournament_id: undefined, manager_id: undefined };
     isEdit = false;
 
     readonly tournaments = signal<TournamentResponse[]>([]);
     readonly managers = signal<UserResponse[]>([]);
+    readonly clubs = signal<ClubResponse[]>([]);
     readonly saving = signal(false);
     readonly loadingExtra = signal(false);
 
@@ -101,7 +126,9 @@ export class TeamManagement implements OnInit {
             this.load(Number(id));
         }
 
-        // Only staff and admin pick the owner and the tournament.
+        // Managers still pick a club — they own theirs. Only staff and admin pick the
+        // owner and the tournament.
+        this.loadClubs();
         if (!this.isManager()) {
             this.loadPickers();
         }
@@ -109,6 +136,18 @@ export class TeamManagement implements OnInit {
 
     isManager(): boolean {
         return this.authService.isManager();
+    }
+
+    /** The Spanish division labels come from the catalog, but the field stays free text. */
+    divisions(): SimpleRelation[] {
+        return this.catalogService.get('team_divisions');
+    }
+
+    private loadClubs() {
+        this.clubService
+            .getClubs()
+            .pipe(catchError(() => of({ data: [] })))
+            .subscribe((res) => this.clubs.set((res.data ?? []) as ClubResponse[]));
     }
 
     private loadPickers() {
@@ -131,6 +170,8 @@ export class TeamManagement implements OnInit {
                 this.team = {
                     id: data.id,
                     name: data.name,
+                    division: data.division ?? '',
+                    club_id: data.club_id,
                     manager_id: data.manager_id,
                     tournament_id: data.tournament_id
                 };
@@ -152,6 +193,8 @@ export class TeamManagement implements OnInit {
         this.saving.set(true);
         const payload: TeamRequest = {
             name: this.team.name.trim(),
+            division: this.team.division?.trim() || undefined,
+            club_id: this.team.club_id ?? null,
             manager_id: this.team.manager_id,
             tournament_id: this.team.tournament_id ?? null
         };

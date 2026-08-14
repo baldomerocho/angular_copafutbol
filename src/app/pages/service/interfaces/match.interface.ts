@@ -1,6 +1,14 @@
 export type MatchStatus = 'scheduled' | 'live' | 'finished' | 'rescheduled' | 'canceled';
 export type MatchStage = 'group' | 'round-of-32' | 'round-of-16' | 'quarter-final' | 'semi-final' | 'third-place' | 'final';
-export type MatchEventType = 'goal' | 'yellow_card' | 'red_card' | 'foul' | 'fine';
+export type MatchEventType =
+    | 'goal'
+    | 'penalty_goal'
+    | 'own_goal'
+    | 'assist'
+    | 'yellow_card'
+    | 'red_card'
+    | 'foul'
+    | 'fine';
 
 export interface MatchResponse {
     id: number;
@@ -21,6 +29,14 @@ export interface MatchResponse {
     stage: MatchStage;
     round: number;
     status: MatchStatus;
+
+    /** A shootout is kept apart from the score so it decides who advances
+     *  without touching goals for and against in the standings. */
+    went_to_extra_time: boolean;
+    went_to_penalties: boolean;
+    home_penalties: number;
+    away_penalties: number;
+
     created_at?: string;
 }
 
@@ -46,6 +62,10 @@ export interface MatchUpdateRequest {
     status?: MatchStatus;
     home_score?: number;
     away_score?: number;
+    went_to_extra_time?: boolean;
+    went_to_penalties?: boolean;
+    home_penalties?: number;
+    away_penalties?: number;
 }
 
 export interface MatchEventRequest {
@@ -145,14 +165,33 @@ export interface BracketRound {
 }
 
 export interface PlayerStatsResponse {
+    rank: number;
     player_id: number;
     player_name: string;
     player_number: number;
+    position?: string;
     team_id: number;
     team_name: string;
+
+    matches_played: number;
     goals: number;
+    penalty_goals: number;
+    own_goals: number;
+    assists: number;
     yellows: number;
     reds: number;
+    fouls: number;
+
+    goals_per_match: number;
+    suspended: boolean;
+}
+
+/** A player's card: who they are and what they have done in each tournament. */
+export interface PlayerProfileResponse {
+    player: import('./team.interface').PlayerResponse;
+    squads: import('./team.interface').RosterEntryResponse[];
+    records: PlayerStatsResponse[];
+    totals: PlayerStatsResponse;
 }
 
 // --- Suspensions ---

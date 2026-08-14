@@ -193,23 +193,32 @@ interface Matchday {
                                     <th style="width: 3rem">#</th>
                                     <th>Jugador</th>
                                     <th>Equipo</th>
+                                    <th class="text-center">PJ</th>
                                     <th class="text-center">Goles</th>
+                                    <th class="text-center">Asist.</th>
                                     <th class="text-center">TA</th>
                                     <th class="text-center">TR</th>
                                 </tr>
                             </ng-template>
-                            <ng-template pTemplate="body" let-player let-i="rowIndex">
+                            <ng-template pTemplate="body" let-player>
                                 <tr>
-                                    <td class="tabular-nums">{{ i + 1 }}</td>
-                                    <td class="font-medium">{{ player.player_name }}</td>
+                                    <td class="tabular-nums">{{ player.rank }}</td>
+                                    <td>
+                                        <a [routerLink]="['/publico/jugadores', player.player_id]"
+                                           class="font-medium no-underline text-color hover:underline">
+                                            {{ player.player_name }}
+                                        </a>
+                                    </td>
                                     <td class="text-muted-color">{{ player.team_name }}</td>
+                                    <td class="text-center tabular-nums text-muted-color">{{ player.matches_played }}</td>
                                     <td class="text-center font-bold tabular-nums">{{ player.goals }}</td>
+                                    <td class="text-center tabular-nums">{{ player.assists }}</td>
                                     <td class="text-center tabular-nums text-yellow-600">{{ player.yellows }}</td>
                                     <td class="text-center tabular-nums text-red-600">{{ player.reds }}</td>
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="emptymessage">
-                                <tr><td colspan="6" class="text-center py-8 text-muted-color">Sin goles registrados.</td></tr>
+                                <tr><td colspan="8" class="text-center py-8 text-muted-color">Sin goles registrados.</td></tr>
                             </ng-template>
                         </p-table>
                     </p-tabpanel>
