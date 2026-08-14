@@ -41,6 +41,40 @@
                 }
             }
         },
+        "/admin/clubs/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Delete a club that has no squads left",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clubs"
+                ],
+                "summary": "Delete a club",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Club ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_ClubResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/admin/dashboard": {
             "get": {
                 "security": [
@@ -633,6 +667,133 @@
                 }
             }
         },
+        "/manager/clubs": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Institutions and the squads they field. Managers see only their own.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clubs"
+                ],
+                "summary": "List clubs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by name",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Rows per page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_ClubResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Register an institution. Managers become the club's own contact.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clubs"
+                ],
+                "summary": "Create a club",
+                "parameters": [
+                    {
+                        "description": "Club data",
+                        "name": "club",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.ClubRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_ClubResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/manager/clubs/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clubs"
+                ],
+                "summary": "Update a club",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Club ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Club data",
+                        "name": "club",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.ClubRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_ClubResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/manager/dashboard": {
             "get": {
                 "security": [
@@ -945,6 +1106,103 @@
                 }
             }
         },
+        "/manager/players": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Find a person by name or identity document before registering them,\nso the same human does not end up as two records.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "players"
+                ],
+                "summary": "Search players",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Name or document",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Exact identity document",
+                        "name": "document",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Rows per page",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/manager/players/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Correct the person's own data. Their shirt number belongs to the roster entry.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "players"
+                ],
+                "summary": "Update a player's details",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Player data",
+                        "name": "player",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/manager/teams": {
             "get": {
                 "security": [
@@ -1176,7 +1434,7 @@
                         "Bearer": []
                     }
                 ],
-                "description": "Add a new player to a managed team",
+                "description": "Put a player on the squad's roster. Pass player_id for someone already\nin the system, or their details to create and register them in one call —\nthe identity document decides whether the person already exists.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1184,9 +1442,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "teams"
+                    "rosters"
                 ],
-                "summary": "Add a player to a team",
+                "summary": "Register a player on a squad",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1196,12 +1454,12 @@
                         "required": true
                     },
                     {
-                        "description": "Player data",
+                        "description": "Roster entry",
                         "name": "player",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerRequest"
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.RosterEntryRequest"
                         }
                     }
                 ],
@@ -1209,7 +1467,7 @@
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerResponse"
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_RosterEntryResponse"
                         }
                     }
                 }
@@ -1222,7 +1480,7 @@
                         "Bearer": []
                     }
                 ],
-                "description": "Update name or shirt number of a player on a managed team",
+                "description": "Change a registered player's shirt number, position or captaincy",
                 "consumes": [
                     "application/json"
                 ],
@@ -1230,9 +1488,9 @@
                     "application/json"
                 ],
                 "tags": [
-                    "teams"
+                    "rosters"
                 ],
-                "summary": "Update a player",
+                "summary": "Update a roster entry",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1249,12 +1507,12 @@
                         "required": true
                     },
                     {
-                        "description": "Player data",
+                        "description": "Roster entry",
                         "name": "player",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerRequest"
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.RosterEntryRequest"
                         }
                     }
                 ],
@@ -1262,7 +1520,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerResponse"
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_RosterEntryResponse"
                         }
                     }
                 }
@@ -1403,6 +1661,35 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_UserResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/clubs/{id}": {
+            "get": {
+                "description": "Club detail with every squad it fields",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clubs"
+                ],
+                "summary": "Get a club",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Club ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_ClubResponse"
                         }
                     }
                 }
@@ -1550,6 +1837,63 @@
                 }
             }
         },
+        "/public/players/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "players"
+                ],
+                "summary": "Get a player",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/players/{id}/profile": {
+            "get": {
+                "description": "Who the player is, the squads they are registered with, and what\nthey have done in each tournament.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "players"
+                ],
+                "summary": "Get a player's card",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerProfileResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/public/settings/app": {
             "get": {
                 "description": "Get branding, logo and currency settings",
@@ -1621,14 +1965,14 @@
         },
         "/public/teams/{id}/players": {
             "get": {
-                "description": "List all players of a specific team",
+                "description": "Registered players of a squad, ordered by shirt number",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "teams"
+                    "rosters"
                 ],
-                "summary": "Get players of a team",
+                "summary": "Get a squad's roster",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1642,7 +1986,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerResponse"
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_RosterEntryResponse"
                         }
                     }
                 }
@@ -3301,6 +3645,21 @@
                 "meta": {}
             }
         },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_ClubResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.ClubResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
         "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_FieldResponse": {
             "type": "object",
             "properties": {
@@ -3421,6 +3780,21 @@
                 "meta": {}
             }
         },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_RosterEntryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.RosterEntryResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
         "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_SettingResponse": {
             "type": "object",
             "properties": {
@@ -3516,6 +3890,18 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.AdminDashboardResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_ClubResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.ClubResponse"
                 },
                 "message": {
                     "type": "string"
@@ -3619,11 +4005,35 @@
                 "meta": {}
             }
         },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerProfileResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerProfileResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
         "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_RosterEntryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.RosterEntryResponse"
                 },
                 "message": {
                     "type": "string"
@@ -3779,6 +4189,81 @@
                 "stage": {
                     "type": "string",
                     "example": "semi-final"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.ClubRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "founded_in": {
+                    "type": "integer",
+                    "example": 1998
+                },
+                "location": {
+                    "type": "string",
+                    "example": "Zona 1"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "manager_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "name": {
+                    "type": "string",
+                    "example": "FC Universitario"
+                },
+                "short_name": {
+                    "type": "string",
+                    "example": "FCU"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.ClubResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "founded_in": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "location": {
+                    "type": "string"
+                },
+                "logo_url": {
+                    "type": "string"
+                },
+                "manager": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.UserResponse"
+                },
+                "manager_id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "FC Universitario"
+                },
+                "short_name": {
+                    "type": "string",
+                    "example": "FCU"
+                },
+                "team_count": {
+                    "type": "integer"
+                },
+                "teams": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TeamResponse"
+                    }
                 }
             }
         },
@@ -4116,6 +4601,10 @@
                     "type": "string",
                     "example": "2026-06-01T15:05:00Z"
                 },
+                "away_penalties": {
+                    "type": "integer",
+                    "example": 3
+                },
                 "away_score": {
                     "type": "integer",
                     "example": 0
@@ -4153,6 +4642,10 @@
                     "type": "string",
                     "example": "Grupo A"
                 },
+                "home_penalties": {
+                    "type": "integer",
+                    "example": 4
+                },
                 "home_score": {
                     "type": "integer",
                     "example": 0
@@ -4188,6 +4681,12 @@
                 "tournament_id": {
                     "type": "integer",
                     "example": 1
+                },
+                "went_to_extra_time": {
+                    "type": "boolean"
+                },
+                "went_to_penalties": {
+                    "type": "boolean"
                 }
             }
         },
@@ -4197,6 +4696,10 @@
                 "actual_start_time": {
                     "type": "string",
                     "example": "2026-06-01T15:05:00Z"
+                },
+                "away_penalties": {
+                    "type": "integer",
+                    "example": 3
                 },
                 "away_score": {
                     "type": "integer",
@@ -4214,6 +4717,10 @@
                     "type": "integer",
                     "example": 1
                 },
+                "home_penalties": {
+                    "type": "integer",
+                    "example": 4
+                },
                 "home_score": {
                     "type": "integer",
                     "example": 1
@@ -4225,6 +4732,13 @@
                         }
                     ],
                     "example": "live"
+                },
+                "went_to_extra_time": {
+                    "description": "A shootout is recorded apart from the score so it decides who advances\nwithout polluting goals for and against in the standings.",
+                    "type": "boolean"
+                },
+                "went_to_penalties": {
+                    "type": "boolean"
                 }
             }
         },
@@ -4384,27 +4898,75 @@
                 }
             }
         },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerProfileResponse": {
+            "type": "object",
+            "properties": {
+                "player": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerResponse"
+                },
+                "records": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerStatsResponse"
+                    }
+                },
+                "squads": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.RosterEntryResponse"
+                    }
+                },
+                "totals": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerStatsResponse"
+                }
+            }
+        },
         "github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerRequest": {
             "type": "object",
             "required": [
                 "name"
             ],
             "properties": {
+                "birth_date": {
+                    "type": "string",
+                    "example": "1998-03-14T00:00:00Z"
+                },
+                "document": {
+                    "type": "string",
+                    "example": "1234567890101"
+                },
                 "name": {
                     "type": "string",
                     "example": "Cristiano Ronaldo"
                 },
-                "number": {
-                    "type": "integer",
-                    "example": 7
+                "phone": {
+                    "type": "string"
+                },
+                "photo_url": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "string",
+                    "example": "forward"
                 }
             }
         },
         "github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerResponse": {
             "type": "object",
             "properties": {
+                "age": {
+                    "type": "integer",
+                    "example": 27
+                },
+                "birth_date": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
+                },
+                "document": {
+                    "type": "string",
+                    "example": "1234567890101"
                 },
                 "id": {
                     "type": "integer",
@@ -4414,20 +4976,41 @@
                     "type": "string",
                     "example": "Cristiano Ronaldo"
                 },
-                "number": {
-                    "type": "integer",
-                    "example": 7
+                "phone": {
+                    "type": "string"
                 },
-                "team_id": {
-                    "type": "integer",
-                    "example": 1
+                "photo_url": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "string",
+                    "example": "forward"
                 }
             }
         },
         "github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerStatsResponse": {
             "type": "object",
             "properties": {
+                "assists": {
+                    "type": "integer"
+                },
+                "fouls": {
+                    "type": "integer"
+                },
                 "goals": {
+                    "type": "integer"
+                },
+                "goals_per_match": {
+                    "description": "/ GoalsPerMatch is rounded to two decimals for display.",
+                    "type": "number"
+                },
+                "matches_played": {
+                    "type": "integer"
+                },
+                "own_goals": {
+                    "type": "integer"
+                },
+                "penalty_goals": {
                     "type": "integer"
                 },
                 "player_id": {
@@ -4439,8 +5022,17 @@
                 "player_number": {
                     "type": "integer"
                 },
+                "position": {
+                    "type": "string"
+                },
+                "rank": {
+                    "type": "integer"
+                },
                 "reds": {
                     "type": "integer"
+                },
+                "suspended": {
+                    "type": "boolean"
                 },
                 "team_id": {
                     "type": "integer"
@@ -4449,6 +5041,78 @@
                     "type": "string"
                 },
                 "yellows": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.RosterEntryRequest": {
+            "type": "object",
+            "required": [
+                "number"
+            ],
+            "properties": {
+                "birth_date": {
+                    "type": "string"
+                },
+                "document": {
+                    "type": "string",
+                    "example": "1234567890101"
+                },
+                "is_captain": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Cristiano Ronaldo"
+                },
+                "number": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "player_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "position": {
+                    "type": "string",
+                    "example": "forward"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.RosterEntryResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "is_captain": {
+                    "type": "boolean"
+                },
+                "number": {
+                    "type": "integer",
+                    "example": 7
+                },
+                "player": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerResponse"
+                },
+                "player_id": {
+                    "type": "integer"
+                },
+                "position": {
+                    "type": "string",
+                    "example": "forward"
+                },
+                "suspended": {
+                    "type": "boolean"
+                },
+                "team_id": {
                     "type": "integer"
                 }
             }
@@ -4687,18 +5351,22 @@
         },
         "github_com_baldomerocho_copafutbol_internal_api_dtos.TeamRequest": {
             "type": "object",
-            "required": [
-                "manager_id",
-                "name"
-            ],
             "properties": {
+                "club_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "division": {
+                    "type": "string",
+                    "example": "Primera"
+                },
                 "manager_id": {
                     "type": "integer",
                     "example": 1
                 },
                 "name": {
                     "type": "string",
-                    "example": "Real Madrid CF"
+                    "example": "FC Universitario Primera"
                 },
                 "tournament_id": {
                     "type": "integer",
@@ -4709,8 +5377,18 @@
         "github_com_baldomerocho_copafutbol_internal_api_dtos.TeamResponse": {
             "type": "object",
             "properties": {
+                "club": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.SimpleRelation"
+                },
+                "club_id": {
+                    "type": "integer"
+                },
                 "created_at": {
                     "type": "string"
+                },
+                "division": {
+                    "type": "string",
+                    "example": "Primera"
                 },
                 "id": {
                     "type": "integer",
@@ -4725,12 +5403,15 @@
                 },
                 "name": {
                     "type": "string",
-                    "example": "Real Madrid CF"
+                    "example": "FC Universitario Primera"
                 },
-                "players": {
+                "player_count": {
+                    "type": "integer"
+                },
+                "roster": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerResponse"
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.RosterEntryResponse"
                     }
                 },
                 "tournament": {
@@ -4873,6 +5554,10 @@
                     "type": "integer",
                     "example": 1
                 },
+                "knockout_tiebreaks": {
+                    "type": "string",
+                    "example": "away_goals,extra_time,penalties"
+                },
                 "location": {
                     "type": "string",
                     "example": "Madrid Sports Complex"
@@ -4885,11 +5570,19 @@
                     "type": "integer",
                     "example": 90
                 },
+                "max_player_age": {
+                    "type": "integer",
+                    "example": 40
+                },
                 "max_players_per_team": {
                     "type": "integer",
                     "example": 25
                 },
                 "max_teams": {
+                    "type": "integer",
+                    "example": 16
+                },
+                "min_player_age": {
                     "type": "integer",
                     "example": 16
                 },
@@ -4924,6 +5617,10 @@
                 "registration_open": {
                     "type": "boolean",
                     "example": true
+                },
+                "require_player_document": {
+                    "type": "boolean",
+                    "example": false
                 },
                 "scheduling_day": {
                     "type": "integer",
@@ -4968,6 +5665,10 @@
                         }
                     ],
                     "example": "league"
+                },
+                "unique_player_per_tournament": {
+                    "type": "boolean",
+                    "example": true
                 },
                 "yellow_card_threshold": {
                     "type": "integer",
@@ -5031,6 +5732,9 @@
                 "knockout_legs": {
                     "type": "integer"
                 },
+                "knockout_tiebreaks": {
+                    "type": "string"
+                },
                 "location": {
                     "type": "string",
                     "example": "Madrid Sports Complex"
@@ -5041,12 +5745,18 @@
                 "match_duration_minutes": {
                     "type": "integer"
                 },
+                "max_player_age": {
+                    "type": "integer"
+                },
                 "max_players_per_team": {
                     "type": "integer"
                 },
                 "max_teams": {
                     "type": "integer",
                     "example": 16
+                },
+                "min_player_age": {
+                    "type": "integer"
                 },
                 "min_players_per_team": {
                     "type": "integer"
@@ -5071,6 +5781,9 @@
                     "type": "integer"
                 },
                 "registration_open": {
+                    "type": "boolean"
+                },
+                "require_player_document": {
                     "type": "boolean"
                 },
                 "scheduling_day": {
@@ -5114,6 +5827,9 @@
                         }
                     ],
                     "example": "league"
+                },
+                "unique_player_per_tournament": {
+                    "type": "boolean"
                 },
                 "yellow_card_threshold": {
                     "type": "integer"
@@ -5240,6 +5956,9 @@
             "type": "string",
             "enum": [
                 "goal",
+                "own_goal",
+                "penalty_goal",
+                "assist",
                 "yellow_card",
                 "red_card",
                 "foul",
@@ -5247,6 +5966,9 @@
             ],
             "x-enum-varnames": [
                 "EventGoal",
+                "EventOwnGoal",
+                "EventPenaltyGoal",
+                "EventAssist",
                 "EventYellowCard",
                 "EventRedCard",
                 "EventFoul",
