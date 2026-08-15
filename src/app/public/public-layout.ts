@@ -43,7 +43,12 @@ import { LayoutService } from '../layout/service/layout.service';
 
             <footer class="border-t border-surface py-6 mt-8">
                 <div class="max-w-6xl mx-auto px-4 flex flex-wrap justify-between gap-3 text-sm text-muted-color">
-                    <span>{{ config.platformName() }}</span>
+                    @if (config.appConfig()?.website_url) {
+                        <a [href]="config.appConfig()?.website_url" target="_blank" rel="noopener"
+                           class="text-muted-color hover:underline">{{ config.platformName() }}</a>
+                    } @else {
+                        <span>{{ config.platformName() }}</span>
+                    }
                     @if (config.appConfig()?.contact_email) {
                         <a [href]="'mailto:' + config.appConfig()?.contact_email" class="text-muted-color">
                             {{ config.appConfig()?.contact_email }}

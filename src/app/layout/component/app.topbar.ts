@@ -23,7 +23,7 @@ import { Router } from '@angular/router';
             <a class="layout-topbar-logo" routerLink="/">
                 <img *ngIf="configService.appConfig()?.logo_url" [src]="configService.appConfig()?.logo_url" alt="Logo" class="mr-2" style="height: 2.5rem;">
                 <i *ngIf="!configService.appConfig()?.logo_url" class="pi pi-trophy text-primary text-4xl mr-2"></i>
-                <span>{{ configService.appConfig()?.platform_name || 'COPA FUTBOL' }}</span>
+                <span>{{ configService.appConfig()?.platform_name || 'COPA PAISANOS' }}</span>
             </a>
         </div>
 
