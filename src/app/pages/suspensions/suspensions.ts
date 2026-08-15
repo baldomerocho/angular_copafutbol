@@ -16,6 +16,7 @@ import { SuspensionResponse } from '../service/interfaces/match.interface';
 import { TournamentResponse } from '../service/interfaces/tournament.interface';
 import { MatchService } from '../service/match.service';
 import { TournamentService } from '../service/tournament.service';
+import { ServerTable } from '../shared/server-table';
 
 /**
  * Sanctions board. Suspensions are created automatically when a card is recorded
@@ -47,15 +48,18 @@ import { TournamentService } from '../service/tournament.service';
             </p-toolbar>
 
             <div class="flex flex-wrap gap-3 mb-4">
-                <p-select [options]="tournaments()" [(ngModel)]="tournamentFilter" (onChange)="load()"
+                <p-select [options]="tournaments()" [(ngModel)]="tournamentFilter" (onChange)="table.reload()"
                           optionLabel="name" optionValue="id" placeholder="Todos los torneos"
                           [showClear]="true" styleClass="w-full sm:w-64" />
-                <p-selectbutton [options]="activeOptions" [(ngModel)]="activeFilter" (onChange)="load()"
+                <p-selectbutton [options]="activeOptions" [(ngModel)]="activeFilter" (onChange)="table.reload()"
                                 optionLabel="label" optionValue="value" [allowEmpty]="false" />
             </div>
 
-            <p-table [value]="suspensions()" [rows]="15" [paginator]="suspensions().length > 15"
-                     [loading]="loading()" responsiveLayout="scroll" dataKey="id">
+            <p-table [value]="table.rows()" [lazy]="true" (onLazyLoad)="table.onLazyLoad($event)"
+                     [paginator]="true" [rows]="table.perPage" [totalRecords]="table.total()" [first]="table.first"
+                     [rowsPerPageOptions]="[15, 30, 60]" [loading]="table.loading()"
+                     currentPageReportTemplate="{first} - {last} de {totalRecords}" [showCurrentPageReport]="true"
+                     responsiveLayout="scroll" dataKey="id">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Jugador</th>
@@ -121,9 +125,15 @@ export class Suspensions implements OnInit {
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
 
-    readonly suspensions = signal<SuspensionResponse[]>([]);
     readonly tournaments = signal<TournamentResponse[]>([]);
-    readonly loading = signal(true);
+
+    readonly table: ServerTable<SuspensionResponse> = new ServerTable<SuspensionResponse>((paging) =>
+        this.matchService.getSuspensions({
+            ...paging,
+            tournament_id: this.tournamentFilter,
+            active: this.activeFilter === '' ? undefined : this.activeFilter === 'true'
+        })
+    );
 
     tournamentFilter?: number;
     activeFilter: 'true' | 'false' | '' = 'true';
@@ -138,26 +148,7 @@ export class Suspensions implements OnInit {
         this.tournamentService.getTournaments().subscribe({
             next: (res) => this.tournaments.set(res.data ?? [])
         });
-        this.load();
-    }
-
-    load() {
-        this.loading.set(true);
-        this.matchService
-            .getSuspensions({
-                tournament_id: this.tournamentFilter,
-                active: this.activeFilter === '' ? undefined : this.activeFilter === 'true'
-            })
-            .subscribe({
-                next: (res) => {
-                    this.suspensions.set(res.data ?? []);
-                    this.loading.set(false);
-                },
-                error: () => {
-                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las sanciones.' });
-                    this.loading.set(false);
-                }
-            });
+        // The lazy table loads the first page itself.
     }
 
     serveOne(suspension: SuspensionResponse) {
@@ -183,7 +174,7 @@ export class Suspensions implements OnInit {
         this.matchService.updateSuspension(suspension.id, patch).subscribe({
             next: () => {
                 this.messageService.add({ severity: 'success', summary: 'Listo', detail: successMessage });
-                this.load();
+                this.table.refreshAfterDelete();
             },
             error: (err) =>
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message ?? 'No se pudo actualizar.' })

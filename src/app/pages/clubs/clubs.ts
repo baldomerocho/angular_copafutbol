@@ -24,6 +24,7 @@ import { ClubService } from '../service/club.service';
 import { ClubRequest, ClubResponse } from '../service/interfaces/team.interface';
 import { UserResponse } from '../service/interfaces/user.interface';
 import { UserService } from '../service/user.service';
+import { ServerTable } from '../shared/server-table';
 
 /**
  * Clubs are the institution behind the squads: "Deportivo Central" fields a first
@@ -63,11 +64,14 @@ import { UserService } from '../service/user.service';
             <p-iconfield class="mb-4 block max-w-md">
                 <p-inputicon class="pi pi-search" />
                 <input pInputText type="text" placeholder="Buscar club" class="w-full"
-                       (input)="applySearch($any($event.target).value)" />
+                       (input)="table.setSearch($any($event.target).value)" />
             </p-iconfield>
 
-            <p-table [value]="filtered()" [rows]="15" [paginator]="filtered().length > 15"
-                     [loading]="loading()" responsiveLayout="scroll" dataKey="id">
+            <p-table [value]="table.rows()" [lazy]="true" (onLazyLoad)="table.onLazyLoad($event)"
+                     [paginator]="true" [rows]="table.perPage" [totalRecords]="table.total()" [first]="table.first"
+                     [rowsPerPageOptions]="[15, 30, 60]" [loading]="table.loading()"
+                     currentPageReportTemplate="{first} - {last} de {totalRecords}" [showCurrentPageReport]="true"
+                     responsiveLayout="scroll" dataKey="id">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Club</th>
@@ -202,21 +206,21 @@ export class Clubs implements OnInit {
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
 
-    readonly clubs = signal<ClubResponse[]>([]);
-    readonly filtered = signal<ClubResponse[]>([]);
     readonly managers = signal<UserResponse[]>([]);
-    readonly loading = signal(true);
     readonly working = signal(false);
+
+    readonly table: ServerTable<ClubResponse> = new ServerTable<ClubResponse>((paging) =>
+        this.clubService.getClubs({ ...paging, search: this.table.search || undefined })
+    );
 
     dialog = false;
     form: ClubRequest & { id?: number } = { name: '' };
-    private search = '';
 
     ngOnInit() {
-        this.load();
+        // The lazy table loads the first page itself.
         if (!this.isManager()) {
             this.userService
-                .getUsers('manager')
+                .getUsers({ role: 'manager' })
                 .pipe(catchError(() => of({ data: [] })))
                 .subscribe((res) => this.managers.set((res.data ?? []) as UserResponse[]));
         }
@@ -234,35 +238,6 @@ export class Clubs implements OnInit {
             .slice(0, 3)
             .map((word) => word[0].toUpperCase())
             .join('');
-    }
-
-    load() {
-        this.loading.set(true);
-        this.clubService.getClubs().subscribe({
-            next: (res) => {
-                this.clubs.set(res.data ?? []);
-                this.applySearch(this.search);
-                this.loading.set(false);
-            },
-            error: () => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los clubes.' });
-                this.loading.set(false);
-            }
-        });
-    }
-
-    applySearch(term: string) {
-        this.search = term ?? '';
-        const needle = this.search.trim().toLowerCase();
-        this.filtered.set(
-            needle
-                ? this.clubs().filter(
-                      (club) =>
-                          club.name.toLowerCase().includes(needle) ||
-                          (club.location ?? '').toLowerCase().includes(needle)
-                  )
-                : this.clubs()
-        );
     }
 
     openNew() {
@@ -312,7 +287,7 @@ export class Clubs implements OnInit {
                     summary: 'Guardado',
                     detail: `Club ${this.form.id ? 'actualizado' : 'creado'}.`
                 });
-                this.load();
+                this.table.refresh();
             },
             error: (err) => {
                 this.working.set(false);
@@ -337,7 +312,7 @@ export class Clubs implements OnInit {
                 this.clubService.deleteClub(club.id).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Club eliminado.' });
-                        this.load();
+                        this.table.refreshAfterDelete();
                     },
                     error: (err) =>
                         this.messageService.add({

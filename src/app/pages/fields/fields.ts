@@ -14,6 +14,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { TooltipModule } from 'primeng/tooltip';
 import { FieldRequest, FieldResponse } from '../service/interfaces/field.interface';
 import { FieldService } from '../service/field.service';
+import { ServerTable } from '../shared/server-table';
 
 /** Venues. The calendar generator spreads matches across whatever is listed here. */
 @Component({
@@ -43,8 +44,11 @@ import { FieldService } from '../service/field.service';
                 </ng-template>
             </p-toolbar>
 
-            <p-table [value]="fields()" [rows]="15" [paginator]="fields().length > 15"
-                     [loading]="loading()" responsiveLayout="scroll" dataKey="id">
+            <p-table [value]="table.rows()" [lazy]="true" (onLazyLoad)="table.onLazyLoad($event)"
+                     [paginator]="true" [rows]="table.perPage" [totalRecords]="table.total()" [first]="table.first"
+                     [rowsPerPageOptions]="[15, 30, 60]" [loading]="table.loading()"
+                     currentPageReportTemplate="{first} - {last} de {totalRecords}" [showCurrentPageReport]="true"
+                     responsiveLayout="scroll" dataKey="id">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Nombre</th>
@@ -117,9 +121,11 @@ export class Fields implements OnInit {
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
 
-    readonly fields = signal<FieldResponse[]>([]);
-    readonly loading = signal(true);
     readonly working = signal(false);
+
+    readonly table: ServerTable<FieldResponse> = new ServerTable<FieldResponse>((paging) =>
+        this.fieldService.getFields(paging)
+    );
 
     fieldDialog = false;
     editing = false;
@@ -127,21 +133,7 @@ export class Fields implements OnInit {
     form: FieldRequest = { name: '', location: '', capacity: 0 };
 
     ngOnInit() {
-        this.load();
-    }
-
-    load() {
-        this.loading.set(true);
-        this.fieldService.getFields().subscribe({
-            next: (res) => {
-                this.fields.set(res.data ?? []);
-                this.loading.set(false);
-            },
-            error: () => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las sedes.' });
-                this.loading.set(false);
-            }
-        });
+        // The lazy table loads the first page itself.
     }
 
     openNew() {
@@ -174,7 +166,7 @@ export class Fields implements OnInit {
                 this.working.set(false);
                 this.fieldDialog = false;
                 this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Sede guardada.' });
-                this.load();
+                this.table.refresh();
             },
             error: (err) => {
                 this.working.set(false);
@@ -195,7 +187,7 @@ export class Fields implements OnInit {
                 this.fieldService.deleteField(field.id).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'Eliminada', detail: 'Sede eliminada.' });
-                        this.load();
+                        this.table.refreshAfterDelete();
                     },
                     error: (err) =>
                         this.messageService.add({

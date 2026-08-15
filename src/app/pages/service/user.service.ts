@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { ApiBase } from './api.base';
-import { BaseResponse } from './interfaces/base.interface';
+import { BaseResponse, Paging } from './interfaces/base.interface';
 import {
     UserCreateRequest,
     UserResponse,
@@ -9,6 +9,11 @@ import {
     UserUpdateProfileRequest,
     UserUpdateRequest
 } from './interfaces/user.interface';
+
+export interface UserFilters extends Paging {
+    role?: string;
+    search?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class UserService extends ApiBase {
@@ -22,9 +27,9 @@ export class UserService extends ApiBase {
             : `${this.baseUrl}/staff/managers`;
     }
 
-    getUsers(role?: string): Observable<BaseResponse<UserResponse[]>> {
+    getUsers(filters?: UserFilters): Observable<BaseResponse<UserResponse[]>> {
         return this.http.get<BaseResponse<UserResponse[]>>(this.endpoint(), {
-            params: this.params({ role })
+            params: this.params(filters)
         });
     }
 

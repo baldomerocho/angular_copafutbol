@@ -21,6 +21,7 @@ import { TeamResponse } from '../service/interfaces/team.interface';
 import { TournamentResponse } from '../service/interfaces/tournament.interface';
 import { TeamService } from '../service/team.service';
 import { TournamentService } from '../service/tournament.service';
+import { ServerTable } from '../shared/server-table';
 
 @Component({
     selector: 'app-teams',
@@ -51,11 +52,14 @@ import { TournamentService } from '../service/tournament.service';
             <p-iconfield class="mb-4 block max-w-md">
                 <p-inputicon class="pi pi-search" />
                 <input pInputText type="text" placeholder="Buscar equipo" class="w-full"
-                       (input)="applySearch($any($event.target).value)" />
+                       (input)="table.setSearch($any($event.target).value)" />
             </p-iconfield>
 
-            <p-table [value]="filtered()" [rows]="15" [paginator]="filtered().length > 15"
-                     [loading]="loading()" responsiveLayout="scroll" dataKey="id">
+            <p-table [value]="table.rows()" [lazy]="true" (onLazyLoad)="table.onLazyLoad($event)"
+                     [paginator]="true" [rows]="table.perPage" [totalRecords]="table.total()" [first]="table.first"
+                     [rowsPerPageOptions]="[15, 30, 60]" [loading]="table.loading()"
+                     currentPageReportTemplate="{first} - {last} de {totalRecords}" [showCurrentPageReport]="true"
+                     responsiveLayout="scroll" dataKey="id">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Equipo</th>
@@ -180,22 +184,24 @@ export class Teams implements OnInit {
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
 
-    readonly teams = signal<TeamResponse[]>([]);
-    readonly filtered = signal<TeamResponse[]>([]);
+
     readonly tournaments = signal<TournamentResponse[]>([]);
-    readonly loading = signal(true);
     readonly working = signal(false);
+
+    readonly table: ServerTable<TeamResponse> = new ServerTable<TeamResponse>((paging) =>
+        this.teamService.getTeams({ ...paging, search: this.table.search || undefined })
+    );
 
     enrollDialog = false;
     selectedTeam: TeamResponse | null = null;
     enrollTournamentId?: number;
-    private search = '';
 
     ngOnInit() {
+        // Every open tournament has to be in the picker, so this one is not paged.
         this.tournamentService.getTournaments().subscribe({
             next: (res) => this.tournaments.set(res.data ?? [])
         });
-        this.load();
+        // The lazy table loads the first page itself.
     }
 
     isManager(): boolean {
@@ -223,36 +229,6 @@ export class Teams implements OnInit {
         return (tournament.enrollment_price ?? 0) + (tournament.extra_prices ?? []).reduce((sum, e) => sum + e.amount, 0);
     }
 
-    load() {
-        this.loading.set(true);
-        this.teamService.getTeams().subscribe({
-            next: (res) => {
-                this.teams.set(res.data ?? []);
-                this.applySearch(this.search);
-                this.loading.set(false);
-            },
-            error: () => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los equipos.' });
-                this.loading.set(false);
-            }
-        });
-    }
-
-    applySearch(term: string) {
-        this.search = term ?? '';
-        const needle = this.search.trim().toLowerCase();
-        this.filtered.set(
-            needle
-                ? this.teams().filter(
-                      (team) =>
-                          team.name.toLowerCase().includes(needle) ||
-                          (team.club?.name ?? '').toLowerCase().includes(needle) ||
-                          (team.division ?? '').toLowerCase().includes(needle)
-                  )
-                : this.teams()
-        );
-    }
-
     openEnroll(team: TeamResponse) {
         this.selectedTeam = team;
         this.enrollTournamentId = this.openTournaments()[0]?.id;
@@ -271,7 +247,7 @@ export class Teams implements OnInit {
                 this.working.set(false);
                 this.enrollDialog = false;
                 this.messageService.add({ severity: 'success', summary: 'Inscrito', detail: 'El equipo quedó inscrito en el torneo.' });
-                this.load();
+                this.table.refresh();
             },
             error: (err) => {
                 this.working.set(false);
@@ -296,7 +272,7 @@ export class Teams implements OnInit {
                 this.teamService.deleteTeam(team.id).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Equipo eliminado.' });
-                        this.load();
+                        this.table.refreshAfterDelete();
                     },
                     error: (err) =>
                         this.messageService.add({

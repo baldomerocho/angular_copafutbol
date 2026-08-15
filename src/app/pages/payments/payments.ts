@@ -25,7 +25,8 @@ import { ConfigService } from '../service/config.service';
 import { PaymentRequest, PaymentResponse } from '../service/interfaces/payment.interface';
 import { TeamResponse } from '../service/interfaces/team.interface';
 import { TournamentResponse } from '../service/interfaces/tournament.interface';
-import { PaymentService } from '../service/payment.service';
+import { PaymentFilters, PaymentService, PaymentSummaryResponse } from '../service/payment.service';
+import { ServerTable } from '../shared/server-table';
 import { TeamService } from '../service/team.service';
 import { TournamentService } from '../service/tournament.service';
 import { paymentStatusSeverity } from '../shared/status';
@@ -77,18 +78,21 @@ import { paymentStatusSeverity } from '../shared/status';
                 <p-iconfield class="flex-1 min-w-[14rem]">
                     <p-inputicon class="pi pi-search" />
                     <input pInputText type="text" placeholder="Buscar por equipo o referencia" class="w-full"
-                           (input)="applySearch($any($event.target).value)" />
+                           (input)="table.setSearch($any($event.target).value)" />
                 </p-iconfield>
-                <p-select [options]="statusOptions()" [(ngModel)]="statusFilter" (onChange)="applySearch(search)"
+                <p-select [options]="statusOptions()" [(ngModel)]="statusFilter" (onChange)="table.reload()"
                           optionLabel="name" optionValue="id" placeholder="Todos los estados"
                           [showClear]="true" styleClass="w-full sm:w-52" />
-                <p-select [options]="typeOptions()" [(ngModel)]="typeFilter" (onChange)="applySearch(search)"
+                <p-select [options]="typeOptions()" [(ngModel)]="typeFilter" (onChange)="table.reload()"
                           optionLabel="name" optionValue="id" placeholder="Todos los conceptos"
                           [showClear]="true" styleClass="w-full sm:w-52" />
             </div>
 
-            <p-table [value]="filtered()" [rows]="15" [paginator]="filtered().length > 15"
-                     [loading]="loading()" responsiveLayout="scroll" dataKey="id">
+            <p-table [value]="table.rows()" [lazy]="true" (onLazyLoad)="table.onLazyLoad($event)"
+                     [paginator]="true" [rows]="table.perPage" [totalRecords]="table.total()" [first]="table.first"
+                     [rowsPerPageOptions]="[15, 30, 60]" [loading]="table.loading()"
+                     currentPageReportTemplate="{first} - {last} de {totalRecords}" [showCurrentPageReport]="true"
+                     responsiveLayout="scroll" dataKey="id">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Fecha</th>
@@ -199,14 +203,18 @@ export class Payments implements OnInit {
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
 
-    readonly payments = signal<PaymentResponse[]>([]);
-    readonly filtered = signal<PaymentResponse[]>([]);
     readonly tournaments = signal<TournamentResponse[]>([]);
     readonly teams = signal<TeamResponse[]>([]);
-    readonly loading = signal(true);
+    readonly summary = signal<PaymentSummaryResponse | null>(null);
     readonly working = signal(false);
 
-    search = '';
+    readonly table: ServerTable<PaymentResponse> = new ServerTable<PaymentResponse>((paging) => {
+        // The headline amounts describe the filtered set, not the page, so they are
+        // re-read alongside it.
+        this.loadSummary();
+        return this.paymentService.getPayments({ ...paging, ...this.filters() });
+    });
+
     statusFilter?: string;
     typeFilter?: string;
 
@@ -214,6 +222,7 @@ export class Payments implements OnInit {
     form: PaymentRequest = { team_id: 0, tournament_id: 0, amount: 0, external_id: '', type: 'enrollment' };
 
     ngOnInit() {
+        // Both pickers need every option, so neither is paged.
         forkJoin({
             tournaments: this.tournamentService.getTournaments(),
             teams: this.teamService.getTeams()
@@ -223,7 +232,22 @@ export class Payments implements OnInit {
                 this.teams.set(teams.data ?? []);
             }
         });
-        this.load();
+        // The lazy table loads the first page itself.
+    }
+
+    private filters(): PaymentFilters {
+        return {
+            status: this.statusFilter,
+            type: this.typeFilter,
+            search: this.table.search || undefined
+        };
+    }
+
+    private loadSummary() {
+        this.paymentService.getSummary(this.filters()).subscribe({
+            next: (res) => this.summary.set(res.data ?? null),
+            error: () => this.summary.set(null)
+        });
     }
 
     isStaff(): boolean {
@@ -260,49 +284,15 @@ export class Payments implements OnInit {
         return this.configService.currencySymbol() + (amount ?? 0).toFixed(2);
     }
 
-    /** Headline amounts over the rows currently in view. */
+    /** Headline amounts over every payment the filters match, computed by the API. */
     totals() {
-        const rows = this.filtered();
-        const sum = (predicate: (p: PaymentResponse) => boolean) =>
-            rows.filter(predicate).reduce((total, p) => total + (p.amount ?? 0), 0);
-
+        const summary = this.summary();
         return [
-            { label: 'Aprobado', value: this.money(sum((p) => p.status === 'approved')) },
-            { label: 'Pendiente', value: this.money(sum((p) => p.status === 'pending')) },
-            { label: 'Rechazado', value: this.money(sum((p) => p.status === 'rejected')) },
-            { label: 'Registros', value: String(rows.length) }
+            { label: 'Aprobado', value: this.money(summary?.approved ?? 0) },
+            { label: 'Pendiente', value: this.money(summary?.pending ?? 0) },
+            { label: 'Rechazado', value: this.money(summary?.rejected ?? 0) },
+            { label: 'Registros', value: String(summary?.count ?? 0) }
         ];
-    }
-
-    load() {
-        this.loading.set(true);
-        this.paymentService.getPayments().subscribe({
-            next: (res) => {
-                this.payments.set(res.data ?? []);
-                this.applySearch(this.search);
-                this.loading.set(false);
-            },
-            error: () => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los pagos.' });
-                this.loading.set(false);
-            }
-        });
-    }
-
-    applySearch(term: string) {
-        this.search = term ?? '';
-        const needle = this.search.trim().toLowerCase();
-
-        this.filtered.set(
-            this.payments().filter((payment) => {
-                if (this.statusFilter && payment.status !== this.statusFilter) return false;
-                if (this.typeFilter && payment.type !== this.typeFilter) return false;
-                if (!needle) return true;
-                return [payment.team?.name, payment.tournament?.name, payment.external_id].some((field) =>
-                    field?.toLowerCase().includes(needle)
-                );
-            })
-        );
     }
 
     openNew() {
@@ -345,7 +335,7 @@ export class Payments implements OnInit {
                     summary: rejected ? 'Registrado pero rechazado' : 'Registrado',
                     detail: res.message ?? ''
                 });
-                this.load();
+                this.table.refresh();
             },
             error: (err) => {
                 this.working.set(false);
@@ -358,7 +348,7 @@ export class Payments implements OnInit {
         this.paymentService.updatePaymentStatus(payment.id, status).subscribe({
             next: () => {
                 this.messageService.add({ severity: 'success', summary: 'Listo', detail: 'Estado actualizado. Se notificó al delegado.' });
-                this.load();
+                this.table.refresh();
             },
             error: (err) =>
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message ?? 'No se pudo actualizar.' })
@@ -377,7 +367,7 @@ export class Payments implements OnInit {
                 this.paymentService.deletePayment(payment.id).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Pago eliminado.' });
-                        this.load();
+                        this.table.refreshAfterDelete();
                     },
                     error: (err) =>
                         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message ?? 'No se pudo eliminar.' })

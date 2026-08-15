@@ -21,6 +21,7 @@ import { AuthService } from '../service/auth.service';
 import { CatalogService } from '../service/catalog.service';
 import { UserCreateRequest, UserResponse, UserUpdateRequest } from '../service/interfaces/user.interface';
 import { UserService } from '../service/user.service';
+import { ServerTable } from '../shared/server-table';
 import { roleSeverity } from '../shared/status';
 
 @Component({
@@ -52,11 +53,14 @@ import { roleSeverity } from '../shared/status';
             <p-iconfield class="mb-4 block max-w-md">
                 <p-inputicon class="pi pi-search" />
                 <input pInputText type="text" placeholder="Buscar por nombre o correo" class="w-full"
-                       (input)="applySearch($any($event.target).value)" />
+                       (input)="table.setSearch($any($event.target).value)" />
             </p-iconfield>
 
-            <p-table [value]="filtered()" [rows]="15" [paginator]="filtered().length > 15"
-                     [loading]="loading()" responsiveLayout="scroll" dataKey="id">
+            <p-table [value]="table.rows()" [lazy]="true" (onLazyLoad)="table.onLazyLoad($event)"
+                     [paginator]="true" [rows]="table.perPage" [totalRecords]="table.total()" [first]="table.first"
+                     [rowsPerPageOptions]="[15, 30, 60]" [loading]="table.loading()"
+                     currentPageReportTemplate="{first} - {last} de {totalRecords}" [showCurrentPageReport]="true"
+                     responsiveLayout="scroll" dataKey="id">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Nombre</th>
@@ -144,19 +148,19 @@ export class Users implements OnInit {
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
 
-    readonly users = signal<UserResponse[]>([]);
-    readonly filtered = signal<UserResponse[]>([]);
-    readonly loading = signal(true);
     readonly working = signal(false);
+
+    readonly table: ServerTable<UserResponse> = new ServerTable<UserResponse>((paging) =>
+        this.userService.getUsers({ ...paging, search: this.table.search || undefined })
+    );
 
     userDialog = false;
     editing = false;
     editingId?: number;
     form: UserCreateRequest = { name: '', email: '', password: '', role: 'manager' };
-    private search = '';
 
     ngOnInit() {
-        this.load();
+        // The lazy table loads the first page itself.
     }
 
     isAdmin(): boolean {
@@ -189,31 +193,6 @@ export class Users implements OnInit {
 
     roleTone(role: string) {
         return roleSeverity(role);
-    }
-
-    load() {
-        this.loading.set(true);
-        this.userService.getUsers().subscribe({
-            next: (res) => {
-                this.users.set(res.data ?? []);
-                this.applySearch(this.search);
-                this.loading.set(false);
-            },
-            error: () => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los usuarios.' });
-                this.loading.set(false);
-            }
-        });
-    }
-
-    applySearch(term: string) {
-        this.search = term ?? '';
-        const needle = this.search.trim().toLowerCase();
-        this.filtered.set(
-            needle
-                ? this.users().filter((user) => [user.name, user.email].some((field) => field?.toLowerCase().includes(needle)))
-                : this.users()
-        );
     }
 
     openNew() {
@@ -267,7 +246,7 @@ export class Users implements OnInit {
         this.working.set(false);
         this.userDialog = false;
         this.messageService.add({ severity: 'success', summary: 'Guardado', detail });
-        this.load();
+        this.table.refresh();
     }
 
     private onError(err: { error?: { message?: string } }) {
@@ -287,7 +266,7 @@ export class Users implements OnInit {
                 this.userService.deleteUser(user.id).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: 'Usuario eliminado.' });
-                        this.load();
+                        this.table.refreshAfterDelete();
                     },
                     error: (err) =>
                         this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message ?? 'No se pudo eliminar.' })

@@ -19,6 +19,7 @@ import { CatalogService } from '../service/catalog.service';
 import { ConfigService } from '../service/config.service';
 import { TournamentResponse } from '../service/interfaces/tournament.interface';
 import { TournamentService } from '../service/tournament.service';
+import { ServerTable } from '../shared/server-table';
 import { tournamentStatusSeverity } from '../shared/status';
 
 @Component({
@@ -51,18 +52,21 @@ import { tournamentStatusSeverity } from '../shared/status';
                 <p-iconfield class="flex-1 min-w-[14rem]">
                     <p-inputicon class="pi pi-search" />
                     <input pInputText type="text" placeholder="Buscar torneo" class="w-full"
-                           (input)="applySearch($any($event.target).value)" />
+                           (input)="table.setSearch($any($event.target).value)" />
                 </p-iconfield>
-                <p-select [options]="statusOptions()" [(ngModel)]="statusFilter" (onChange)="load()"
+                <p-select [options]="statusOptions()" [(ngModel)]="statusFilter" (onChange)="table.reload()"
                           optionLabel="name" optionValue="id" placeholder="Todos los estados"
                           [showClear]="true" styleClass="w-full sm:w-52" />
-                <p-select [options]="typeOptions()" [(ngModel)]="typeFilter" (onChange)="load()"
+                <p-select [options]="typeOptions()" [(ngModel)]="typeFilter" (onChange)="table.reload()"
                           optionLabel="name" optionValue="id" placeholder="Todos los formatos"
                           [showClear]="true" styleClass="w-full sm:w-56" />
             </div>
 
-            <p-table [value]="filtered()" [rows]="10" [paginator]="filtered().length > 10"
-                     [loading]="loading()" responsiveLayout="scroll" dataKey="id">
+            <p-table [value]="table.rows()" [lazy]="true" (onLazyLoad)="table.onLazyLoad($event)"
+                     [paginator]="true" [rows]="table.perPage" [totalRecords]="table.total()" [first]="table.first"
+                     [rowsPerPageOptions]="[10, 25, 50]" [loading]="table.loading()"
+                     currentPageReportTemplate="{first} - {last} de {totalRecords}" [showCurrentPageReport]="true"
+                     responsiveLayout="scroll" dataKey="id">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Torneo</th>
@@ -148,16 +152,22 @@ export class Tournaments implements OnInit {
     private readonly confirmationService = inject(ConfirmationService);
     private readonly router = inject(Router);
 
-    readonly tournaments = signal<TournamentResponse[]>([]);
-    readonly filtered = signal<TournamentResponse[]>([]);
-    readonly loading = signal(true);
+    readonly table: ServerTable<TournamentResponse> = new ServerTable<TournamentResponse>(
+        (paging) =>
+            this.tournamentService.getTournaments({
+                ...paging,
+                status: this.statusFilter,
+                type: this.typeFilter,
+                search: this.table.search || undefined
+            }),
+        10
+    );
 
     statusFilter?: string;
     typeFilter?: string;
-    private search = '';
 
     ngOnInit() {
-        this.load();
+        // The lazy table loads the first page itself.
     }
 
     statusOptions() {
@@ -184,33 +194,6 @@ export class Tournaments implements OnInit {
         return this.configService.currencySymbol() + (amount ?? 0).toFixed(2);
     }
 
-    load() {
-        this.loading.set(true);
-        this.tournamentService.getTournaments({ status: this.statusFilter, type: this.typeFilter }).subscribe({
-            next: (res) => {
-                this.tournaments.set(res.data ?? []);
-                this.applySearch(this.search);
-                this.loading.set(false);
-            },
-            error: () => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los torneos.' });
-                this.loading.set(false);
-            }
-        });
-    }
-
-    applySearch(term: string) {
-        this.search = term ?? '';
-        const needle = this.search.trim().toLowerCase();
-        this.filtered.set(
-            needle
-                ? this.tournaments().filter((t) =>
-                      [t.name, t.season, t.location].some((field) => field?.toLowerCase().includes(needle))
-                  )
-                : this.tournaments()
-        );
-    }
-
     openNew() {
         this.router.navigate(['/pages/tournaments/new']);
     }
@@ -231,7 +214,7 @@ export class Tournaments implements OnInit {
                 this.tournamentService.deleteTournament(tournament.id).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'Eliminado', detail: `"${tournament.name}" fue eliminado.` });
-                        this.load();
+                        this.table.refreshAfterDelete();
                     },
                     error: (err) =>
                         this.messageService.add({

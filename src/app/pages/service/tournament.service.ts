@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiBase } from './api.base';
-import { BaseResponse } from './interfaces/base.interface';
+import { BaseResponse, Paging } from './interfaces/base.interface';
 import {
     AutoAssignGroupsRequest,
     TournamentGroupRequest,
@@ -11,10 +11,11 @@ import {
 } from './interfaces/tournament.interface';
 import { MatchResponse } from './interfaces/match.interface';
 
-export interface TournamentFilters {
+export interface TournamentFilters extends Paging {
     status?: string;
     type?: string;
     season?: string;
+    search?: string;
 }
 
 @Injectable({ providedIn: 'root' })

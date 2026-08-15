@@ -154,7 +154,7 @@ export class TeamManagement implements OnInit {
         this.loadingExtra.set(true);
         forkJoin({
             tournaments: this.tournamentService.getTournaments().pipe(catchError(() => of({ data: [] }))),
-            managers: this.userService.getUsers('manager').pipe(catchError(() => of({ data: [] })))
+            managers: this.userService.getUsers({ role: 'manager' }).pipe(catchError(() => of({ data: [] })))
         }).subscribe(({ tournaments, managers }) => {
             this.tournaments.set((tournaments.data ?? []) as TournamentResponse[]);
             this.managers.set((managers.data ?? []) as UserResponse[]);

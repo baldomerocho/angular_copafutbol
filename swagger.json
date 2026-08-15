@@ -480,6 +480,24 @@
                         "description": "Filter by role",
                         "name": "role",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by name or email",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Rows per page (max 200)",
+                        "name": "per_page",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1091,6 +1109,44 @@
                     "payments"
                 ],
                 "summary": "List all payments",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by type",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by tournament",
+                        "name": "tournament_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by team, tournament or reference",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Rows per page (max 200)",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -1133,6 +1189,57 @@
                         "description": "Created",
                         "schema": {
                             "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PaymentResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/manager/payments/summary": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Amounts by status over every payment matching the filters, not just\nthe page on screen — the headline figures would otherwise be wrong.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payments"
+                ],
+                "summary": "Payment totals",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by status",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by type",
+                        "name": "type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by tournament",
+                        "name": "tournament_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by team, tournament or reference",
+                        "name": "search",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PaymentSummaryResponse"
                         }
                     }
                 }
@@ -1261,6 +1368,24 @@
                         "type": "boolean",
                         "description": "Only teams not enrolled in any tournament",
                         "name": "unassigned",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by team, division or club name",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Rows per page (max 200)",
+                        "name": "per_page",
                         "in": "query"
                     }
                 ],
@@ -1737,6 +1862,26 @@
                     "fields"
                 ],
                 "summary": "List all fields",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Filter by name or location",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Rows per page (max 200)",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -2051,6 +2196,24 @@
                         "type": "string",
                         "description": "Filter by season",
                         "name": "season",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by name",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Rows per page (max 200)",
+                        "name": "per_page",
                         "in": "query"
                     }
                 ],
@@ -2492,6 +2655,24 @@
                         "type": "string",
                         "description": "Filter by role",
                         "name": "role",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by name or email",
+                        "name": "search",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Rows per page (max 200)",
+                        "name": "per_page",
                         "in": "query"
                     }
                 ],
@@ -4037,6 +4218,18 @@
                 "meta": {}
             }
         },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PaymentSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PaymentSummaryResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
         "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerProfileResponse": {
             "type": "object",
             "properties": {
@@ -4927,6 +5120,27 @@
                         }
                     ],
                     "example": "enrollment"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.PaymentSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "approved": {
+                    "type": "number",
+                    "example": 1500
+                },
+                "count": {
+                    "type": "integer",
+                    "example": 24
+                },
+                "pending": {
+                    "type": "number",
+                    "example": 300
+                },
+                "rejected": {
+                    "type": "number",
+                    "example": 50
                 }
             }
         },

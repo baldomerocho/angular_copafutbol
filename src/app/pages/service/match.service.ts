@@ -27,6 +27,13 @@ export interface MatchFilters extends Paging {
     limit?: number;
 }
 
+export interface SuspensionFilters extends Paging {
+    tournament_id?: number;
+    team_id?: number;
+    player_id?: number;
+    active?: boolean;
+}
+
 @Injectable({ providedIn: 'root' })
 export class MatchService extends ApiBase {
     getMatches(filters?: MatchFilters): Observable<BaseResponse<MatchResponse[]>> {
@@ -97,7 +104,7 @@ export class MatchService extends ApiBase {
 
     // --- Suspensions ---
 
-    getSuspensions(filters?: { tournament_id?: number; team_id?: number; player_id?: number; active?: boolean }): Observable<BaseResponse<SuspensionResponse[]>> {
+    getSuspensions(filters?: SuspensionFilters): Observable<BaseResponse<SuspensionResponse[]>> {
         return this.http.get<BaseResponse<SuspensionResponse[]>>(this.scoped('/suspensions'), {
             params: this.params(filters)
         });

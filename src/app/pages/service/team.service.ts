@@ -14,6 +14,7 @@ import { Paging } from './interfaces/base.interface';
 export interface TeamFilters extends Paging {
     tournament_id?: number;
     unassigned?: boolean;
+    search?: string;
 }
 
 @Injectable({ providedIn: 'root' })
