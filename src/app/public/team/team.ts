@@ -5,6 +5,7 @@ import { ButtonModule } from 'primeng/button';
 import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
 import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { CatalogService } from '../../pages/service/catalog.service';
@@ -22,7 +23,7 @@ import { matchStatusSeverity } from '../../pages/shared/status';
 @Component({
     selector: 'app-public-team',
     standalone: true,
-    imports: [CommonModule, RouterModule, TagModule, ButtonModule, TableModule, TabsModule],
+    imports: [CommonModule, RouterModule, TagModule, ButtonModule, TableModule, TabsModule, TooltipModule],
     template: `
         @if (loading()) {
             <div class="text-center py-20 text-muted-color"><i class="pi pi-spin pi-spinner text-3xl"></i></div>
@@ -92,7 +93,9 @@ import { matchStatusSeverity } from '../../pages/shared/status';
                                 <tr>
                                     <th style="width: 9rem">Fecha</th>
                                     <th>Rival</th>
-                                    <th class="text-center" style="width: 6rem">Resultado</th>
+                                    <th class="text-center cursor-help" style="width: 6rem"
+                                        pTooltip="Marcador visto desde este equipo: primero sus goles"
+                                        tooltipPosition="top">Resultado</th>
                                     <th style="width: 7rem">Estado</th>
                                 </tr>
                             </ng-template>
@@ -111,8 +114,10 @@ import { matchStatusSeverity } from '../../pages/shared/status';
                                     </td>
                                     <td class="text-center font-bold tabular-nums">
                                         @if (match.status === 'finished' || match.status === 'live') {
-                                            <span [class.text-green-600]="outcome(match) === 'W'"
-                                                  [class.text-red-500]="outcome(match) === 'L'">
+                                            <span class="cursor-help"
+                                                  [class.text-green-600]="outcome(match) === 'W'"
+                                                  [class.text-red-500]="outcome(match) === 'L'"
+                                                  [pTooltip]="outcomeLabel(match)" tooltipPosition="top">
                                                 {{ ourGoals(match) }} - {{ theirGoals(match) }}
                                             </span>
                                         } @else {
@@ -260,6 +265,15 @@ export class PublicTeam implements OnInit {
 
     theirGoals(match: MatchResponse): number {
         return this.isHome(match) ? match.away_score : match.home_score;
+    }
+
+    /** Spells out the coloured score, which reads as decoration otherwise. */
+    outcomeLabel(match: MatchResponse): string {
+        const result = this.outcome(match);
+        const live = match.status === 'live' ? ' (en juego)' : '';
+        if (result === 'W') return `Victoria${live}`;
+        if (result === 'L') return `Derrota${live}`;
+        return `Empate${live}`;
     }
 
     /** Colours the score from this team's side, which is the whole point of a team page. */

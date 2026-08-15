@@ -13,7 +13,7 @@ import { CatalogService } from '../../service/catalog.service';
 import { PlayerStatsResponse, StandingsResponse } from '../../service/interfaces/match.interface';
 import { MatchService } from '../../service/match.service';
 import { downloadCsv, slugify } from '../../shared/csv';
-import { formResultClass } from '../../shared/status';
+import { STANDINGS_HINTS, formResultLabel, formResultClass } from '../../shared/status';
 
 /** The live table, built from the tournament's own points and tiebreaker rules. */
 @Component({
@@ -61,8 +61,8 @@ import { formResultClass } from '../../shared/status';
                                     <th class="text-center" pTooltip="Goles en contra">GC</th>
                                     <th class="text-center" pTooltip="Diferencia de goles">DG</th>
                                     <th class="text-center" pTooltip="Tarjetas">TA/TR</th>
-                                    <th class="text-center">Racha</th>
-                                    <th class="text-center">Pts</th>
+                                    <th class="text-center cursor-help" [pTooltip]="hint('Racha')" tooltipPosition="top">Racha</th>
+                                    <th class="text-center cursor-help" [pTooltip]="hint('Pts')" tooltipPosition="top">Pts</th>
                                 </tr>
                             </ng-template>
 
@@ -92,9 +92,10 @@ import { formResultClass } from '../../shared/status';
                                     <td class="text-center">
                                         <span class="inline-flex gap-1">
                                             @for (result of entry.form.split(''); track $index) {
-                                                <span class="inline-flex items-center justify-center rounded-sm text-[10px] font-bold"
+                                                <span class="inline-flex items-center justify-center rounded-sm text-[10px] font-bold cursor-help"
                                                       style="width: 1.1rem; height: 1.1rem"
-                                                      [ngClass]="resultClass(result)">{{ result }}</span>
+                                                      [ngClass]="resultClass(result)"
+                                                      [pTooltip]="resultLabel(result)" tooltipPosition="top">{{ result }}</span>
                                             }
                                         </span>
                                     </td>
@@ -169,8 +170,8 @@ import { formResultClass } from '../../shared/status';
                                 <tr>
                                     <th>Jugador</th>
                                     <th>Equipo</th>
-                                    <th class="text-center">Amarillas</th>
-                                    <th class="text-center">Rojas</th>
+                                    <th class="text-center cursor-help" [pTooltip]="hint('TA')" tooltipPosition="top">Amarillas</th>
+                                    <th class="text-center cursor-help" [pTooltip]="hint('TR')" tooltipPosition="top">Rojas</th>
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="body" let-player>
@@ -271,6 +272,14 @@ export class TournamentStandings implements OnInit {
                 player.reds
             ])
         );
+    }
+
+    hint(column: string): string {
+        return STANDINGS_HINTS[column] ?? column;
+    }
+
+    resultLabel(result: string): string {
+        return formResultLabel(result);
     }
 
     scorers(): PlayerStatsResponse[] {

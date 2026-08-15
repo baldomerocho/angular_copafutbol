@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { MenuItem } from 'primeng/api';
 import { MenuModule } from 'primeng/menu';
+import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
 import { TagModule } from 'primeng/tag';
@@ -21,7 +22,7 @@ import { TournamentResponse } from '../../pages/service/interfaces/tournament.in
 import { MatchService } from '../../pages/service/match.service';
 import { TournamentService } from '../../pages/service/tournament.service';
 import { downloadCsv, slugify } from '../../pages/shared/csv';
-import { formResultClass, matchStatusSeverity, tournamentStatusSeverity } from '../../pages/shared/status';
+import { STANDINGS_HINTS, formResultClass, formResultLabel, matchStatusSeverity, tournamentStatusSeverity } from '../../pages/shared/status';
 
 interface Matchday {
     round: number;
@@ -33,7 +34,7 @@ interface Matchday {
 @Component({
     selector: 'app-public-tournament',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, TagModule, TabsModule, ButtonModule, MenuModule],
+    imports: [CommonModule, RouterModule, TableModule, TagModule, TabsModule, ButtonModule, MenuModule, TooltipModule],
     template: `
         @if (loading()) {
             <div class="text-center py-20 text-muted-color"><i class="pi pi-spin pi-spinner text-3xl"></i></div>
@@ -120,15 +121,11 @@ interface Matchday {
                                         <tr>
                                             <th style="width: 3rem">#</th>
                                             <th>Equipo</th>
-                                            <th class="text-center">PJ</th>
-                                            <th class="text-center">G</th>
-                                            <th class="text-center">E</th>
-                                            <th class="text-center">P</th>
-                                            <th class="text-center">GF</th>
-                                            <th class="text-center">GC</th>
-                                            <th class="text-center">DG</th>
-                                            <th class="text-center">Racha</th>
-                                            <th class="text-center">Pts</th>
+                                            @for (col of standingsColumns; track col) {
+                                                <th class="text-center cursor-help" [pTooltip]="hint(col)" tooltipPosition="top">
+                                                    {{ col }}
+                                                </th>
+                                            }
                                         </tr>
                                     </ng-template>
                                     <ng-template pTemplate="body" let-entry>
@@ -157,8 +154,9 @@ interface Matchday {
                                             <td class="text-center">
                                                 <span class="inline-flex gap-1">
                                                     @for (result of entry.form.split(''); track $index) {
-                                                        <span class="inline-flex items-center justify-center rounded-sm text-[10px] font-bold"
-                                                              style="width: 1.1rem; height: 1.1rem" [ngClass]="resultClass(result)">{{ result }}</span>
+                                                        <span class="inline-flex items-center justify-center rounded-sm text-[10px] font-bold cursor-help"
+                                                              style="width: 1.1rem; height: 1.1rem" [ngClass]="resultClass(result)"
+                                                              [pTooltip]="resultLabel(result)" tooltipPosition="top">{{ result }}</span>
                                                     }
                                                 </span>
                                             </td>
@@ -242,11 +240,11 @@ interface Matchday {
                                     <th style="width: 3rem">#</th>
                                     <th>Jugador</th>
                                     <th>Equipo</th>
-                                    <th class="text-center">PJ</th>
+                                    <th class="text-center cursor-help" [pTooltip]="hint('PJ')" tooltipPosition="top">PJ</th>
                                     <th class="text-center">Goles</th>
                                     <th class="text-center">Asist.</th>
-                                    <th class="text-center">TA</th>
-                                    <th class="text-center">TR</th>
+                                    <th class="text-center cursor-help" [pTooltip]="hint('TA')" tooltipPosition="top">TA</th>
+                                    <th class="text-center cursor-help" [pTooltip]="hint('TR')" tooltipPosition="top">TR</th>
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="body" let-player>
@@ -432,6 +430,17 @@ export class PublicTournament implements OnInit {
                 player.reds
             ])
         );
+    }
+
+    /** The standings columns, in order, so header and tooltip never drift apart. */
+    readonly standingsColumns = ['PJ', 'G', 'E', 'P', 'GF', 'GC', 'DG', 'Racha', 'Pts'];
+
+    hint(column: string): string {
+        return STANDINGS_HINTS[column] ?? column;
+    }
+
+    resultLabel(result: string): string {
+        return formResultLabel(result);
     }
 
     statusLabel(status: string) {
