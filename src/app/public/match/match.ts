@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -109,7 +109,7 @@ import { eventTypeSeverity, matchStatusSeverity } from '../../pages/shared/statu
         }
     `
 })
-export class PublicMatch implements OnInit {
+export class PublicMatch implements OnInit, OnDestroy {
     private readonly matchService = inject(MatchService);
     private readonly catalogService = inject(CatalogService);
     private readonly route = inject(ActivatedRoute);
@@ -119,17 +119,43 @@ export class PublicMatch implements OnInit {
     readonly lineups = signal<LineupResponse[]>([]);
     readonly loading = signal(true);
 
+    private matchId = 0;
+    private liveTimer?: ReturnType<typeof setInterval>;
+
     ngOnInit() {
-        const id = Number(this.route.snapshot.params['id']);
-        this.matchService.getMatch(id).subscribe({
+        this.matchId = Number(this.route.snapshot.params['id']);
+        this.load();
+    }
+
+    ngOnDestroy() {
+        clearInterval(this.liveTimer);
+    }
+
+    private load() {
+        this.matchService.getMatch(this.matchId).subscribe({
             next: (res) => {
                 this.match.set(res.data?.match ?? null);
                 this.events.set(res.data?.events ?? []);
                 this.lineups.set(res.data?.lineups ?? []);
                 this.loading.set(false);
+                this.watchWhileLive();
             },
             error: () => this.loading.set(false)
         });
+    }
+
+    /**
+     * Re-reads the sheet while the match is being played, so the score and the
+     * timeline follow along without a reload. Polling rather than a socket: the
+     * page is read for a couple of hours at most and this needs nothing special
+     * from the tunnel or any proxy in front of it. Stops as soon as the match is
+     * no longer live.
+     */
+    private watchWhileLive() {
+        clearInterval(this.liveTimer);
+        if (this.match()?.status !== 'live') return;
+
+        this.liveTimer = setInterval(() => this.load(), 20_000);
     }
 
     lineupFor(side: string): LineupResponse[] {

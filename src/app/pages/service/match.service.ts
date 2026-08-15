@@ -19,6 +19,8 @@ import {
 } from './interfaces/match.interface';
 
 export interface MatchFilters extends Paging {
+    /** Kickoff order: 'desc' for the most recent first, default next-first. */
+    order?: 'asc' | 'desc';
     tournament_id?: number;
     team_id?: number;
     group_id?: number;
