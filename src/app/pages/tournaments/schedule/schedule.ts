@@ -17,6 +17,7 @@ import { BracketRound, MatchResponse } from '../../service/interfaces/match.inte
 import { TournamentResponse } from '../../service/interfaces/tournament.interface';
 import { MatchService } from '../../service/match.service';
 import { TournamentService } from '../../service/tournament.service';
+import { downloadCsv, slugify } from '../../shared/csv';
 import { matchStatusSeverity } from '../../shared/status';
 
 interface Matchday {
@@ -53,6 +54,8 @@ interface Matchday {
                         <p-button label="Generar eliminatoria" icon="pi pi-sitemap" severity="secondary"
                                   [loading]="working()" (onClick)="generateKnockout()" />
                         @if (matchdays().length > 0) {
+                            <p-button label="Exportar" icon="pi pi-download" severity="secondary" [outlined]="true"
+                                      (onClick)="exportCalendar()" />
                             <p-button label="Borrar programados" icon="pi pi-trash" severity="danger" [outlined]="true"
                                       (onClick)="clear()" />
                         }
@@ -197,6 +200,34 @@ export class TournamentSchedule implements OnInit {
                 date: roundMatches[0]?.estimated_start_time,
                 matches: roundMatches
             }));
+    }
+
+    /** The fixture list as a spreadsheet — what gets printed and pinned at the pitch. */
+    exportCalendar() {
+        downloadCsv(
+            `${slugify(this.tournament()?.name ?? 'torneo')}-calendario`,
+            ['Jornada', 'Fecha', 'Hora', 'Fase', 'Grupo', 'Local', 'Goles local', 'Goles visitante', 'Visitante', 'Cancha', 'Estado'],
+            this.matchdays().flatMap((day) =>
+                day.matches.map((match) => {
+                    const kickoff = match.estimated_start_time ? new Date(match.estimated_start_time) : null;
+                    // An unplayed fixture has no score; a zero there reads as a goalless draw.
+                    const played = match.status === 'finished' || match.status === 'live';
+                    return [
+                        day.round,
+                        kickoff?.toLocaleDateString('es') ?? '',
+                        kickoff?.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' }) ?? '',
+                        this.catalogService.label('match_stages', match.stage),
+                        match.group_name ?? '',
+                        match.home_team_name,
+                        played ? match.home_score : '',
+                        played ? match.away_score : '',
+                        match.away_team_name,
+                        match.field_name ?? '',
+                        this.catalogService.label('match_statuses', match.status)
+                    ];
+                })
+            )
+        );
     }
 
     summary(): string {

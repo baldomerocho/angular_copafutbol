@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
+import { MenuItem } from 'primeng/api';
+import { MenuModule } from 'primeng/menu';
 import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
 import { TagModule } from 'primeng/tag';
@@ -18,6 +20,7 @@ import {
 import { TournamentResponse } from '../../pages/service/interfaces/tournament.interface';
 import { MatchService } from '../../pages/service/match.service';
 import { TournamentService } from '../../pages/service/tournament.service';
+import { downloadCsv, slugify } from '../../pages/shared/csv';
 import { formResultClass, matchStatusSeverity, tournamentStatusSeverity } from '../../pages/shared/status';
 
 interface Matchday {
@@ -30,7 +33,7 @@ interface Matchday {
 @Component({
     selector: 'app-public-tournament',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, TagModule, TabsModule, ButtonModule],
+    imports: [CommonModule, RouterModule, TableModule, TagModule, TabsModule, ButtonModule, MenuModule],
     template: `
         @if (loading()) {
             <div class="text-center py-20 text-muted-color"><i class="pi pi-spin pi-spinner text-3xl"></i></div>
@@ -51,8 +54,49 @@ interface Matchday {
                         @if (tournament()!.location) { · {{ tournament()!.location }} }
                     </div>
                 </div>
-                <p-tag [value]="statusLabel(tournament()!.status)" [severity]="statusTone(tournament()!.status)" />
+                <div class="flex items-center gap-2">
+                    <p-button icon="pi pi-download" label="Exportar" severity="secondary" [outlined]="true"
+                              size="small" (onClick)="exportMenu.toggle($event)" />
+                    <p-menu #exportMenu [model]="exportOptions" [popup]="true" appendTo="body" />
+                    <p-tag [value]="statusLabel(tournament()!.status)" [severity]="statusTone(tournament()!.status)" />
+                </div>
             </div>
+
+            @if (tournament()!.podium; as podium) {
+                <div class="bg-surface-0 dark:bg-surface-900 border border-surface rounded-border p-5 md:p-6 mb-8">
+                    <div class="flex flex-wrap items-center gap-6 md:gap-10">
+                        <div class="flex items-center gap-3">
+                            <i class="pi pi-trophy text-3xl text-yellow-500"></i>
+                            <div>
+                                <div class="text-muted-color text-xs uppercase tracking-wide">Campeón</div>
+                                <a [routerLink]="['/publico/equipos', podium.champion_id]"
+                                   class="text-xl font-bold no-underline text-color hover:underline">
+                                    {{ podium.champion_name }}
+                                </a>
+                            </div>
+                        </div>
+
+                        @if (podium.runner_up_name) {
+                            <div>
+                                <div class="text-muted-color text-xs uppercase tracking-wide">Subcampeón</div>
+                                <a [routerLink]="['/publico/equipos', podium.runner_up_id]"
+                                   class="font-medium no-underline text-color hover:underline">
+                                    {{ podium.runner_up_name }}
+                                </a>
+                            </div>
+                        }
+                        @if (podium.third_name) {
+                            <div>
+                                <div class="text-muted-color text-xs uppercase tracking-wide">Tercer lugar</div>
+                                <a [routerLink]="['/publico/equipos', podium.third_id]"
+                                   class="font-medium no-underline text-color hover:underline">
+                                    {{ podium.third_name }}
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
 
             <p-tabs value="standings">
                 <p-tablist>
@@ -97,7 +141,12 @@ interface Matchday {
                                                     }
                                                 </span>
                                             </td>
-                                            <td class="font-medium">{{ entry.team_name }}</td>
+                                            <td>
+                                                <a [routerLink]="['/publico/equipos', entry.team_id]"
+                                                   class="font-medium no-underline text-color hover:underline">
+                                                    {{ entry.team_name }}
+                                                </a>
+                                            </td>
                                             <td class="text-center tabular-nums">{{ entry.matches_played }}</td>
                                             <td class="text-center tabular-nums">{{ entry.wins }}</td>
                                             <td class="text-center tabular-nums">{{ entry.draws }}</td>
@@ -209,7 +258,10 @@ interface Matchday {
                                             {{ player.player_name }}
                                         </a>
                                     </td>
-                                    <td class="text-muted-color">{{ player.team_name }}</td>
+                                    <td>
+                                        <a [routerLink]="['/publico/equipos', player.team_id]"
+                                           class="text-muted-color no-underline hover:underline">{{ player.team_name }}</a>
+                                    </td>
                                     <td class="text-center tabular-nums text-muted-color">{{ player.matches_played }}</td>
                                     <td class="text-center font-bold tabular-nums">{{ player.goals }}</td>
                                     <td class="text-center tabular-nums">{{ player.assists }}</td>
@@ -297,6 +349,89 @@ export class PublicTournament implements OnInit {
 
     scorers(): PlayerStatsResponse[] {
         return this.playerStats().filter((player) => player.goals > 0);
+    }
+
+    /**
+     * The three things an organizer prints or pastes into a spreadsheet: the
+     * fixture list for the pitch noticeboard, the table, and the scorers.
+     */
+    readonly exportOptions: MenuItem[] = [
+        { label: 'Calendario (CSV)', icon: 'pi pi-calendar', command: () => this.exportCalendar() },
+        { label: 'Tabla de posiciones (CSV)', icon: 'pi pi-list', command: () => this.exportStandings() },
+        { label: 'Goleadores (CSV)', icon: 'pi pi-star', command: () => this.exportScorers() }
+    ];
+
+    private fileName(what: string): string {
+        return `${slugify(this.tournament()?.name ?? 'torneo')}-${what}`;
+    }
+
+    exportCalendar() {
+        downloadCsv(
+            this.fileName('calendario'),
+            ['Fecha', 'Hora', 'Fase', 'Grupo', 'Local', 'Goles local', 'Goles visitante', 'Visitante', 'Cancha', 'Estado'],
+            this.matchdays().flatMap((day) => day.matches).map((match) => {
+                const kickoff = match.estimated_start_time ? new Date(match.estimated_start_time) : null;
+                const played = match.status === 'finished' || match.status === 'live';
+                return [
+                    kickoff?.toLocaleDateString('es') ?? '',
+                    kickoff?.toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' }) ?? '',
+                    this.catalogService.label('match_stages', match.stage),
+                    match.group_name ?? '',
+                    match.home_team_name,
+                    // A fixture that has not been played has no score, and a zero
+                    // there would read as a goalless draw.
+                    played ? match.home_score : '',
+                    played ? match.away_score : '',
+                    match.away_team_name,
+                    match.field_name ?? '',
+                    this.catalogService.label('match_statuses', match.status)
+                ];
+            })
+        );
+    }
+
+    exportStandings() {
+        const rows: unknown[][] = [];
+        for (const group of this.standings()?.groups ?? []) {
+            for (const entry of group.entries ?? []) {
+                rows.push([
+                    group.group_name ?? '',
+                    entry.position,
+                    entry.team_name,
+                    entry.matches_played,
+                    entry.wins,
+                    entry.draws,
+                    entry.losses,
+                    entry.goals_for,
+                    entry.goals_against,
+                    entry.goal_difference,
+                    entry.points
+                ]);
+            }
+        }
+        downloadCsv(
+            this.fileName('tabla'),
+            ['Grupo', 'Pos', 'Equipo', 'PJ', 'G', 'E', 'P', 'GF', 'GC', 'DG', 'Pts'],
+            rows
+        );
+    }
+
+    exportScorers() {
+        downloadCsv(
+            this.fileName('goleadores'),
+            ['Pos', 'Jugador', 'Equipo', 'PJ', 'Goles', 'De penal', 'Asistencias', 'Amarillas', 'Rojas'],
+            this.scorers().map((player) => [
+                player.rank,
+                player.player_name,
+                player.team_name,
+                player.matches_played,
+                player.goals,
+                player.penalty_goals,
+                player.assists,
+                player.yellows,
+                player.reds
+            ])
+        );
     }
 
     statusLabel(status: string) {

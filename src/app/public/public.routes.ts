@@ -13,6 +13,7 @@ export default [
             { path: 'torneos/:id', loadComponent: () => import('./tournament/tournament').then((m) => m.PublicTournament) },
             { path: 'partidos/:id', loadComponent: () => import('./match/match').then((m) => m.PublicMatch) },
             { path: 'jugadores/:id', loadComponent: () => import('./player/player').then((m) => m.PublicPlayer) },
+            { path: 'equipos/:id', loadComponent: () => import('./team/team').then((m) => m.PublicTeam) },
             { path: '**', redirectTo: '' }
         ]
     }

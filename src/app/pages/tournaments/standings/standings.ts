@@ -12,6 +12,7 @@ import { forkJoin } from 'rxjs';
 import { CatalogService } from '../../service/catalog.service';
 import { PlayerStatsResponse, StandingsResponse } from '../../service/interfaces/match.interface';
 import { MatchService } from '../../service/match.service';
+import { downloadCsv, slugify } from '../../shared/csv';
 import { formResultClass } from '../../shared/status';
 
 /** The live table, built from the tournament's own points and tiebreaker rules. */
@@ -29,7 +30,13 @@ import { formResultClass } from '../../shared/status';
                     <h1 class="text-xl font-semibold m-0">Tabla de posiciones</h1>
                     <p class="text-muted-color text-sm mt-1 mb-0">{{ standings()?.tournament_name }} · {{ rulesSummary() }}</p>
                 </div>
-                <p-button label="Actualizar" icon="pi pi-refresh" severity="secondary" [text]="true" (onClick)="load()" />
+                <div class="flex gap-2">
+                    <p-button label="Exportar tabla" icon="pi pi-download" severity="secondary" [outlined]="true"
+                              (onClick)="exportStandings()" />
+                    <p-button label="Exportar goleadores" icon="pi pi-download" severity="secondary" [outlined]="true"
+                              (onClick)="exportScorers()" />
+                    <p-button label="Actualizar" icon="pi pi-refresh" severity="secondary" [text]="true" (onClick)="load()" />
+                </div>
             </div>
 
             @if (loading()) {
@@ -217,6 +224,53 @@ export class TournamentStandings implements OnInit {
                 this.loading.set(false);
             }
         });
+    }
+
+    private fileName(what: string): string {
+        return `${slugify(this.standings()?.tournament_name ?? 'torneo')}-${what}`;
+    }
+
+    exportStandings() {
+        const rows: unknown[][] = [];
+        for (const group of this.standings()?.groups ?? []) {
+            for (const entry of group.entries ?? []) {
+                rows.push([
+                    group.group_name ?? '',
+                    entry.position,
+                    entry.team_name,
+                    entry.matches_played,
+                    entry.wins,
+                    entry.draws,
+                    entry.losses,
+                    entry.goals_for,
+                    entry.goals_against,
+                    entry.goal_difference,
+                    entry.points
+                ]);
+            }
+        }
+        downloadCsv(this.fileName('tabla'),
+            ['Grupo', 'Pos', 'Equipo', 'PJ', 'G', 'E', 'P', 'GF', 'GC', 'DG', 'Pts'], rows);
+    }
+
+    exportScorers() {
+        downloadCsv(
+            this.fileName('goleadores'),
+            ['Pos', 'Jugador', 'Dorsal', 'Equipo', 'PJ', 'Goles', 'De penal', 'Asistencias', 'G/PJ', 'Amarillas', 'Rojas'],
+            this.scorers().map((player) => [
+                player.rank,
+                player.player_name,
+                player.player_number,
+                player.team_name,
+                player.matches_played,
+                player.goals,
+                player.penalty_goals,
+                player.assists,
+                player.goals_per_match,
+                player.yellows,
+                player.reds
+            ])
+        );
     }
 
     scorers(): PlayerStatsResponse[] {
