@@ -76,6 +76,9 @@ export interface TournamentResponse extends TournamentRules {
     currency?: string;
     fees?: TournamentFeeResponse[];
 
+    /** Filled on the tournament detail, and on listings for finished tournaments. */
+    podium?: PodiumResponse | null;
+
     team_count?: number;
     created_at?: string;
 }
@@ -98,6 +101,16 @@ export interface TournamentRequest extends Partial<TournamentRules> {
     payment_deadline?: string | null;
     currency?: string;
     fees?: TournamentFeeRequest[];
+}
+
+/** Who won, once a tournament is actually decided. Absent until then. */
+export interface PodiumResponse {
+    champion_id: number;
+    champion_name: string;
+    runner_up_id: number;
+    runner_up_name: string;
+    third_id?: number;
+    third_name?: string;
 }
 
 /** What a tournament does when a player breaks one of its squad rules. */

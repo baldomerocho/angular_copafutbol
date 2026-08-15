@@ -5860,6 +5860,30 @@
                 }
             }
         },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.PodiumResponse": {
+            "type": "object",
+            "properties": {
+                "champion_id": {
+                    "type": "integer"
+                },
+                "champion_name": {
+                    "type": "string",
+                    "example": "Deportivo Central Primera"
+                },
+                "runner_up_id": {
+                    "type": "integer"
+                },
+                "runner_up_name": {
+                    "type": "string"
+                },
+                "third_id": {
+                    "type": "integer"
+                },
+                "third_name": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_baldomerocho_copafutbol_internal_api_dtos.RegistrationWaiverRequest": {
             "type": "object",
             "properties": {
@@ -6741,6 +6765,14 @@
                 },
                 "payment_deadline": {
                     "type": "string"
+                },
+                "podium": {
+                    "description": "Podium is filled only where it is worth the queries — the tournament detail\nand the public listing of finished tournaments.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PodiumResponse"
+                        }
+                    ]
                 },
                 "points_draw": {
                     "type": "integer"

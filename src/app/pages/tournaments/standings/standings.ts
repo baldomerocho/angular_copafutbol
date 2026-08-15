@@ -12,7 +12,8 @@ import { forkJoin } from 'rxjs';
 import { CatalogService } from '../../service/catalog.service';
 import { PlayerStatsResponse, StandingsResponse } from '../../service/interfaces/match.interface';
 import { MatchService } from '../../service/match.service';
-import { formResultClass } from '../../shared/status';
+import { downloadCsv, slugify } from '../../shared/csv';
+import { STANDINGS_HINTS, formResultLabel, formResultClass } from '../../shared/status';
 
 /** The live table, built from the tournament's own points and tiebreaker rules. */
 @Component({
@@ -29,7 +30,13 @@ import { formResultClass } from '../../shared/status';
                     <h1 class="text-xl font-semibold m-0">Tabla de posiciones</h1>
                     <p class="text-muted-color text-sm mt-1 mb-0">{{ standings()?.tournament_name }} · {{ rulesSummary() }}</p>
                 </div>
-                <p-button label="Actualizar" icon="pi pi-refresh" severity="secondary" [text]="true" (onClick)="load()" />
+                <div class="flex gap-2">
+                    <p-button label="Exportar tabla" icon="pi pi-download" severity="secondary" [outlined]="true"
+                              (onClick)="exportStandings()" />
+                    <p-button label="Exportar goleadores" icon="pi pi-download" severity="secondary" [outlined]="true"
+                              (onClick)="exportScorers()" />
+                    <p-button label="Actualizar" icon="pi pi-refresh" severity="secondary" [text]="true" (onClick)="load()" />
+                </div>
             </div>
 
             @if (loading()) {
@@ -54,8 +61,8 @@ import { formResultClass } from '../../shared/status';
                                     <th class="text-center" pTooltip="Goles en contra">GC</th>
                                     <th class="text-center" pTooltip="Diferencia de goles">DG</th>
                                     <th class="text-center" pTooltip="Tarjetas">TA/TR</th>
-                                    <th class="text-center">Racha</th>
-                                    <th class="text-center">Pts</th>
+                                    <th class="text-center cursor-help" [pTooltip]="hint('Racha')" tooltipPosition="top">Racha</th>
+                                    <th class="text-center cursor-help" [pTooltip]="hint('Pts')" tooltipPosition="top">Pts</th>
                                 </tr>
                             </ng-template>
 
@@ -85,9 +92,10 @@ import { formResultClass } from '../../shared/status';
                                     <td class="text-center">
                                         <span class="inline-flex gap-1">
                                             @for (result of entry.form.split(''); track $index) {
-                                                <span class="inline-flex items-center justify-center rounded-sm text-[10px] font-bold"
+                                                <span class="inline-flex items-center justify-center rounded-sm text-[10px] font-bold cursor-help"
                                                       style="width: 1.1rem; height: 1.1rem"
-                                                      [ngClass]="resultClass(result)">{{ result }}</span>
+                                                      [ngClass]="resultClass(result)"
+                                                      [pTooltip]="resultLabel(result)" tooltipPosition="top">{{ result }}</span>
                                             }
                                         </span>
                                     </td>
@@ -162,8 +170,8 @@ import { formResultClass } from '../../shared/status';
                                 <tr>
                                     <th>Jugador</th>
                                     <th>Equipo</th>
-                                    <th class="text-center">Amarillas</th>
-                                    <th class="text-center">Rojas</th>
+                                    <th class="text-center cursor-help" [pTooltip]="hint('TA')" tooltipPosition="top">Amarillas</th>
+                                    <th class="text-center cursor-help" [pTooltip]="hint('TR')" tooltipPosition="top">Rojas</th>
                                 </tr>
                             </ng-template>
                             <ng-template pTemplate="body" let-player>
@@ -217,6 +225,61 @@ export class TournamentStandings implements OnInit {
                 this.loading.set(false);
             }
         });
+    }
+
+    private fileName(what: string): string {
+        return `${slugify(this.standings()?.tournament_name ?? 'torneo')}-${what}`;
+    }
+
+    exportStandings() {
+        const rows: unknown[][] = [];
+        for (const group of this.standings()?.groups ?? []) {
+            for (const entry of group.entries ?? []) {
+                rows.push([
+                    group.group_name ?? '',
+                    entry.position,
+                    entry.team_name,
+                    entry.matches_played,
+                    entry.wins,
+                    entry.draws,
+                    entry.losses,
+                    entry.goals_for,
+                    entry.goals_against,
+                    entry.goal_difference,
+                    entry.points
+                ]);
+            }
+        }
+        downloadCsv(this.fileName('tabla'),
+            ['Grupo', 'Pos', 'Equipo', 'PJ', 'G', 'E', 'P', 'GF', 'GC', 'DG', 'Pts'], rows);
+    }
+
+    exportScorers() {
+        downloadCsv(
+            this.fileName('goleadores'),
+            ['Pos', 'Jugador', 'Dorsal', 'Equipo', 'PJ', 'Goles', 'De penal', 'Asistencias', 'G/PJ', 'Amarillas', 'Rojas'],
+            this.scorers().map((player) => [
+                player.rank,
+                player.player_name,
+                player.player_number,
+                player.team_name,
+                player.matches_played,
+                player.goals,
+                player.penalty_goals,
+                player.assists,
+                player.goals_per_match,
+                player.yellows,
+                player.reds
+            ])
+        );
+    }
+
+    hint(column: string): string {
+        return STANDINGS_HINTS[column] ?? column;
+    }
+
+    resultLabel(result: string): string {
+        return formResultLabel(result);
     }
 
     scorers(): PlayerStatsResponse[] {
