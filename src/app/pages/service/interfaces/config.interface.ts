@@ -6,6 +6,8 @@ export interface AppConfig {
     primary_color: string;
     contact_email?: string;
     contact_phone?: string;
+    /** Public site the footer links back to. */
+    website_url?: string;
 }
 
 export interface Setting {

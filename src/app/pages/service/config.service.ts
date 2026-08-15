@@ -23,7 +23,7 @@ export class ConfigService extends ApiBase {
     }
 
     platformName(): string {
-        return this.appConfig()?.platform_name || 'Copa Fútbol';
+        return this.appConfig()?.platform_name || 'Copa Paisanos';
     }
 
     currencySymbol(): string {
