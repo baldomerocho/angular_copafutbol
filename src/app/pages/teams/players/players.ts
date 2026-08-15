@@ -115,6 +115,9 @@ import { TournamentService } from '../../service/tournament.service';
                         <td>
                             @if (entry.suspended) {
                                 <p-tag value="Suspendido" severity="danger" />
+                            } @else if (!entry.eligible) {
+                                <p-tag [value]="waiverLabel(entry)" severity="warn" icon="pi pi-clock"
+                                       [pTooltip]="waiverHint(entry)" tooltipPosition="top" />
                             } @else {
                                 <p-tag value="Disponible" severity="success" />
                             }
@@ -207,6 +210,18 @@ import { TournamentService } from '../../service/tournament.service';
                             <div class="text-muted-color text-sm">Solo un jugador por plantilla lleva la cinta.</div>
                         </label>
                     </div>
+
+                    @if (needsApproval()) {
+                        <div class="flex flex-col gap-2">
+                            <label class="font-medium">Motivo de la solicitud</label>
+                            <input pInputText [(ngModel)]="form.reason"
+                                   placeholder="Por qué debería autorizarse" class="w-full" />
+                            <small class="text-muted-color">
+                                Este torneo deja algunas reglas a criterio del organizador. Si el jugador cae en
+                                una de ellas, quedará inscrito pero sin poder jugar hasta que la autorice.
+                            </small>
+                        </div>
+                    }
                 </div>
             </p-fluid>
 
@@ -243,7 +258,7 @@ export class Players implements OnInit {
     birthDate?: Date;
     readonly today = new Date();
 
-    form = { name: '', document: '', phone: '', number: 1, position: '', is_captain: false };
+    form = { name: '', document: '', phone: '', number: 1, position: '', is_captain: false, reason: '' };
     private search = '';
 
     ngOnInit() {
@@ -308,7 +323,7 @@ export class Players implements OnInit {
         if (tournament.max_players_per_team > 0 && count >= tournament.max_players_per_team) {
             return `La plantilla llegó al máximo de ${tournament.max_players_per_team} jugadores.`;
         }
-        if (tournament.require_player_document) {
+        if (tournament.policy_missing_document === 'blocked') {
             const missing = this.roster().filter((e) => !e.player.document).length;
             if (missing > 0) return `${missing} jugador(es) sin documento; el torneo lo exige para poder alinearlos.`;
         }
@@ -321,6 +336,37 @@ export class Players implements OnInit {
 
     positionLabel(position?: string): string {
         return position ? this.catalogService.label('player_positions', position) : '—';
+    }
+
+    /** True when the tournament leaves any squad rule to the organizer's judgement. */
+    needsApproval(): boolean {
+        const tournament = this.tournament();
+        if (!tournament) return false;
+        return [
+            tournament.policy_other_team_same_tournament,
+            tournament.policy_other_active_tournament,
+            tournament.policy_missing_document,
+            tournament.policy_outside_age_range
+        ].includes('requires_approval');
+    }
+
+    /** Why this player cannot be fielded, in two words on the badge. */
+    waiverLabel(entry: RosterEntryResponse): string {
+        if (entry.waiver_status === 'rejected') return 'No autorizado';
+        if (entry.waiver_status === 'approved') return 'Falta el pago';
+        return 'Pendiente';
+    }
+
+    /** The long version, on hover. */
+    waiverHint(entry: RosterEntryResponse): string {
+        const rule = entry.waiver_rule ? this.catalogService.label('eligibility_rules', entry.waiver_rule) : 'una regla del torneo';
+        if (entry.waiver_status === 'rejected') {
+            return `El organizador rechazó la solicitud por ${rule.toLowerCase()}.`;
+        }
+        if (entry.waiver_status === 'approved') {
+            return 'Autorizado, pero el cargo del permiso todavía no está aprobado.';
+        }
+        return `Esperando que el organizador autorice: ${rule.toLowerCase()}.`;
     }
 
     suspendedNames(): string {
@@ -347,7 +393,7 @@ export class Players implements OnInit {
         this.editingPlayerId = undefined;
         this.matched.set(null);
         this.birthDate = undefined;
-        this.form = { name: '', document: '', phone: '', number: this.nextFreeNumber(), position: '', is_captain: false };
+        this.form = { name: '', document: '', phone: '', number: this.nextFreeNumber(), position: '', is_captain: false, reason: '' };
         this.playerDialog = true;
     }
 
@@ -362,7 +408,8 @@ export class Players implements OnInit {
             phone: entry.player.phone ?? '',
             number: entry.number,
             position: entry.position ?? entry.player.position ?? '',
-            is_captain: entry.is_captain
+            is_captain: entry.is_captain,
+            reason: ''
         };
         this.playerDialog = true;
     }
@@ -417,7 +464,7 @@ export class Players implements OnInit {
             this.messageService.add({ severity: 'warn', summary: 'Falta el dorsal', detail: 'Asigna un número de camiseta.' });
             return;
         }
-        if (this.tournament()?.require_player_document && !this.form.document.trim() && !this.matched()) {
+        if (this.tournament()?.policy_missing_document === 'blocked' && !this.form.document.trim() && !this.matched()) {
             this.messageService.add({
                 severity: 'warn',
                 summary: 'Falta el documento',
@@ -434,7 +481,8 @@ export class Players implements OnInit {
             phone: this.form.phone.trim(),
             number: this.form.number,
             position: this.form.position,
-            is_captain: this.form.is_captain
+            is_captain: this.form.is_captain,
+            reason: this.form.reason
         };
 
         this.working.set(true);
@@ -443,10 +491,18 @@ export class Players implements OnInit {
             : this.teamService.registerPlayer(this.teamId, payload);
 
         request.subscribe({
-            next: () => {
+            next: (res) => {
                 this.working.set(false);
                 this.playerDialog = false;
-                this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Plantilla actualizada.' });
+                // 202: the entry exists but a rule needs the organizer to sign off.
+                const pending = res.data?.eligible === false;
+                this.messageService.add({
+                    severity: pending ? 'warn' : 'success',
+                    summary: pending ? 'Pendiente de autorización' : 'Guardado',
+                    detail: pending
+                        ? 'Queda en la plantilla, pero no puede ser alineado hasta que el organizador lo autorice.'
+                        : 'Plantilla actualizada.'
+                });
                 this.load();
             },
             error: (err: { error?: { message?: string } }) => {

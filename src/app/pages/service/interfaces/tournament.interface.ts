@@ -33,12 +33,19 @@ export interface TournamentRules {
     // Squads
     min_players_per_team: number;
     max_players_per_team: number;
-    /** Stops one person appearing for two squads of the same competition. */
-    unique_player_per_tournament: boolean;
-    /** Demands a national identity document before a player can be rostered. */
-    require_player_document: boolean;
     min_player_age: number;
     max_player_age: number;
+
+    // Eligibility. Each rule is a three-state policy rather than a switch, because
+    // most of them are decisions an organizer wants to make case by case.
+    /** One person on two squads of this same competition. */
+    policy_other_team_same_tournament: EligibilityPolicy;
+    /** Already registered in a different tournament that is still running. */
+    policy_other_active_tournament: EligibilityPolicy;
+    /** No national identity document on file. */
+    policy_missing_document: EligibilityPolicy;
+    /** Outside min_player_age..max_player_age. */
+    policy_outside_age_range: EligibilityPolicy;
 
     // Scheduling
     scheduling_day: number;
@@ -65,7 +72,9 @@ export interface TournamentResponse extends TournamentRules {
     max_teams?: number;
     allow_late_payment?: boolean;
     payment_deadline?: string | null;
-    extra_prices?: TournamentExtraPriceResponse[];
+    /** ISO code; every amount of this tournament is shown in it. */
+    currency?: string;
+    fees?: TournamentFeeResponse[];
 
     team_count?: number;
     created_at?: string;
@@ -87,7 +96,27 @@ export interface TournamentRequest extends Partial<TournamentRules> {
     max_teams?: number;
     allow_late_payment?: boolean;
     payment_deadline?: string | null;
-    extra_prices?: TournamentExtraPriceRequest[];
+    currency?: string;
+    fees?: TournamentFeeRequest[];
+}
+
+/** What a tournament does when a player breaks one of its squad rules. */
+export type EligibilityPolicy = 'allowed' | 'requires_approval' | 'blocked';
+
+/** One line of a tournament's rate card. The code is what links a charge to what it pays for. */
+export interface TournamentFeeResponse {
+    id?: number;
+    code: string;
+    name: string;
+    amount: number;
+    mandatory: boolean;
+}
+
+export interface TournamentFeeRequest {
+    code: string;
+    name: string;
+    amount: number;
+    mandatory: boolean;
 }
 
 export interface TournamentExtraPriceResponse {
@@ -142,10 +171,13 @@ export const DEFAULT_TOURNAMENT_RULES: TournamentRules = {
 
     min_players_per_team: 7,
     max_players_per_team: 25,
-    unique_player_per_tournament: true,
-    require_player_document: false,
     min_player_age: 0,
     max_player_age: 0,
+
+    policy_other_team_same_tournament: 'blocked',
+    policy_other_active_tournament: 'allowed',
+    policy_missing_document: 'allowed',
+    policy_outside_age_range: 'blocked',
 
     scheduling_day: 6,
     scheduling_start_hour: 9,

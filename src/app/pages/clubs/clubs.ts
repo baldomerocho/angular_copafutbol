@@ -78,7 +78,7 @@ import { ServerTable } from '../shared/server-table';
                         <th>Sede</th>
                         @if (!isManager()) { <th>Delegado</th> }
                         <th>Divisiones</th>
-                        <th style="width: 10rem">Acciones</th>
+                        <th style="width: 12rem">Acciones</th>
                     </tr>
                 </ng-template>
 
@@ -122,6 +122,9 @@ import { ServerTable } from '../shared/server-table';
                         </td>
                         <td>
                             <div class="flex gap-1">
+                                <p-button icon="pi pi-id-card" [rounded]="true" [text]="true" severity="secondary"
+                                          pTooltip="Plantel del club" tooltipPosition="top"
+                                          [routerLink]="['/pages/clubs', club.id, 'players']" />
                                 <p-button icon="pi pi-users" [rounded]="true" [text]="true" severity="secondary"
                                           pTooltip="Ver equipos" tooltipPosition="top"
                                           routerLink="/pages/teams" />

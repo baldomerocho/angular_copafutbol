@@ -21,9 +21,17 @@ import { CatalogService } from '../../service/catalog.service';
 import { ConfigService } from '../../service/config.service';
 import {
     DEFAULT_TOURNAMENT_RULES,
+    TournamentFeeRequest,
     TournamentRequest,
     TournamentResponse
 } from '../../service/interfaces/tournament.interface';
+
+/** The tournament fields that hold an eligibility policy. */
+type EligibilityRuleKey =
+    | 'policy_other_team_same_tournament'
+    | 'policy_other_active_tournament'
+    | 'policy_missing_document'
+    | 'policy_outside_age_range';
 import { TournamentService } from '../../service/tournament.service';
 
 /**
@@ -258,23 +266,30 @@ import { TournamentService } from '../../service/tournament.service';
                                     <p-inputnumber [(ngModel)]="tournament.max_players_per_team" [min]="1" [max]="60" [showButtons]="true" />
                                 </div>
 
-                                <div class="col-span-12 md:col-span-6 flex items-center gap-3">
-                                    <p-toggleswitch [(ngModel)]="tournament.unique_player_per_tournament" inputId="uniquePlayer" />
-                                    <label for="uniquePlayer" class="cursor-pointer">
-                                        <span class="font-medium">Un jugador, un equipo</span>
-                                        <div class="text-muted-color text-sm">
-                                            Impide que la misma persona juegue en dos equipos de este torneo.
-                                            Desactívalo si corres primera y reserva juntas.
-                                        </div>
-                                    </label>
+                                <div class="col-span-12"><p-divider /></div>
+
+                                <div class="col-span-12">
+                                    <div class="font-medium text-lg mb-1">Reglas de elegibilidad</div>
+                                    <p class="text-muted-color text-sm mt-0">
+                                        Qué pasa cuando un jugador rompe cada regla. <strong>Requiere autorización</strong>
+                                        lo inscribe pero sin poder jugar hasta que tú lo apruebes, y puedes cobrarlo
+                                        desde el tarifario.
+                                    </p>
                                 </div>
-                                <div class="col-span-12 md:col-span-6 flex items-center gap-3">
-                                    <p-toggleswitch [(ngModel)]="tournament.require_player_document" inputId="requireDoc" />
-                                    <label for="requireDoc" class="cursor-pointer">
-                                        <span class="font-medium">Exigir documento (DPI)</span>
-                                        <div class="text-muted-color text-sm">Sin documento no se puede inscribir al jugador.</div>
-                                    </label>
-                                </div>
+
+                                @for (rule of eligibilityRules; track rule.key) {
+                                    <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
+                                        <label class="font-medium">{{ rule.label }}</label>
+                                        <p-select [options]="catalog('eligibility_policies')" [(ngModel)]="tournament[rule.key]"
+                                                  optionLabel="name" optionValue="id" appendTo="body" />
+                                        <small class="text-muted-color">{{ rule.hint }}</small>
+                                        @if (tournament[rule.key] === 'requires_approval') {
+                                            <small class="text-primary">
+                                                <i class="pi pi-dollar text-xs mr-1"></i>{{ feeHint(rule.key) }}
+                                            </small>
+                                        }
+                                    </div>
+                                }
 
                                 <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
                                     <label class="font-medium">Edad mínima</label>
@@ -343,12 +358,18 @@ import { TournamentService } from '../../service/tournament.service';
                                     </label>
                                 </div>
 
-                                <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
-                                    <label class="font-medium">Cuota de inscripción</label>
-                                    <p-inputnumber [(ngModel)]="tournament.enrollment_price" mode="currency"
-                                                   currency="USD" locale="es" [min]="0" />
+                                <div class="col-span-12 md:col-span-4 flex flex-col gap-2">
+                                    <label class="font-medium">Moneda</label>
+                                    <p-select [options]="catalog('currencies')" [(ngModel)]="tournament.currency"
+                                              optionLabel="name" optionValue="id" appendTo="body" />
+                                    <small class="text-muted-color">Todos los montos de este torneo se cobran en ella.</small>
                                 </div>
-                                <div class="col-span-12 md:col-span-6 flex flex-col gap-2">
+                                <div class="col-span-12 md:col-span-4 flex flex-col gap-2">
+                                    <label class="font-medium">Cuota de inscripción</label>
+                                    <p-inputnumber [(ngModel)]="tournament.enrollment_price" [min]="0"
+                                                   [minFractionDigits]="2" [suffix]="' ' + (tournament.currency || '')" />
+                                </div>
+                                <div class="col-span-12 md:col-span-4 flex flex-col gap-2">
                                     <label class="font-medium">Cupo de equipos</label>
                                     <p-inputnumber [(ngModel)]="tournament.max_teams" [min]="0" [max]="128" [showButtons]="true" />
                                     <small class="text-muted-color">0 = sin límite.</small>
@@ -372,26 +393,40 @@ import { TournamentService } from '../../service/tournament.service';
 
                                 <div class="col-span-12 flex justify-between items-center">
                                     <div>
-                                        <div class="font-medium text-lg mb-1">Cobros adicionales</div>
-                                        <p class="text-muted-color text-sm mt-0 mb-0">Uniformes, arbitraje, balones y demás.</p>
+                                        <div class="font-medium text-lg mb-1">Tarifario</div>
+                                        <p class="text-muted-color text-sm mt-0 mb-0">
+                                            Todo lo que este torneo cobra. Lo <strong>obligatorio</strong> lo debe todo
+                                            equipo al inscribirse; lo demás solo se cobra cuando aplica, como el permiso
+                                            de una regla que tú autorizas.
+                                        </p>
                                     </div>
-                                    <p-button label="Agregar" icon="pi pi-plus" [text]="true" (onClick)="addExtraPrice()" />
+                                    <p-button label="Agregar" icon="pi pi-plus" [text]="true" (onClick)="addFee()" />
                                 </div>
 
-                                @for (extra of tournament.extra_prices; track $index) {
-                                    <div class="col-span-12 md:col-span-7 flex flex-col gap-2">
+                                @for (fee of tournament.fees; track $index) {
+                                    <div class="col-span-12 md:col-span-4 flex flex-col gap-2">
                                         <label class="font-medium text-sm">Concepto</label>
-                                        <input pInputText [(ngModel)]="extra.name" placeholder="Juego de uniformes" />
+                                        <p-select [options]="catalog('fee_codes')" [(ngModel)]="fee.code"
+                                                  optionLabel="name" optionValue="id" appendTo="body"
+                                                  [editable]="true" (onChange)="nameFee(fee)" placeholder="Código" />
                                     </div>
-                                    <div class="col-span-9 md:col-span-4 flex flex-col gap-2">
+                                    <div class="col-span-12 md:col-span-3 flex flex-col gap-2">
+                                        <label class="font-medium text-sm">Nombre visible</label>
+                                        <input pInputText [(ngModel)]="fee.name" placeholder="Juego de uniformes" />
+                                    </div>
+                                    <div class="col-span-6 md:col-span-2 flex flex-col gap-2">
                                         <label class="font-medium text-sm">Monto</label>
-                                        <p-inputnumber [(ngModel)]="extra.amount" mode="currency" currency="USD" locale="es" [min]="0" />
+                                        <p-inputnumber [(ngModel)]="fee.amount" [min]="0" [minFractionDigits]="2" />
                                     </div>
-                                    <div class="col-span-3 md:col-span-1 flex items-end">
-                                        <p-button icon="pi pi-trash" severity="danger" [text]="true" (onClick)="removeExtraPrice($index)" />
+                                    <div class="col-span-4 md:col-span-2 flex flex-col gap-2">
+                                        <label class="font-medium text-sm">Obligatorio</label>
+                                        <p-toggleswitch [(ngModel)]="fee.mandatory" />
+                                    </div>
+                                    <div class="col-span-2 md:col-span-1 flex items-end">
+                                        <p-button icon="pi pi-trash" severity="danger" [text]="true" (onClick)="removeFee($index)" />
                                     </div>
                                 } @empty {
-                                    <div class="col-span-12 text-muted-color text-sm py-2">Sin cobros adicionales.</div>
+                                    <div class="col-span-12 text-muted-color text-sm py-2">Sin cobros configurados.</div>
                                 }
                             </div>
                         </p-fluid>
@@ -421,7 +456,8 @@ export class TournamentManagement implements OnInit {
         enrollment_price: 0,
         max_teams: 0,
         allow_late_payment: false,
-        extra_prices: [],
+        currency: 'GTQ',
+        fees: [],
         ...DEFAULT_TOURNAMENT_RULES
     };
 
@@ -468,12 +504,53 @@ export class TournamentManagement implements OnInit {
         return this.knockoutTiebreakList.map((id) => this.catalogService.label('knockout_tiebreaks', id)).join(' → ');
     }
 
-    addExtraPrice() {
-        this.tournament.extra_prices = [...(this.tournament.extra_prices ?? []), { name: '', amount: 0 }];
+    /** The squad rules, and what each one is asking the organizer to decide. */
+    readonly eligibilityRules: { key: EligibilityRuleKey; label: string; hint: string }[] = [
+        {
+            key: 'policy_other_team_same_tournament',
+            label: 'Ya juega en otro equipo de este torneo',
+            hint: 'Bloquéalo salvo que corras primera y reserva compartiendo jugadores.'
+        },
+        {
+            key: 'policy_other_active_tournament',
+            label: 'Ya juega en otro torneo activo',
+            hint: 'La copa y la liga son competencias distintas; suele permitirse.'
+        },
+        {
+            key: 'policy_missing_document',
+            label: 'No tiene documento (DPI)',
+            hint: 'Útil cuando alguien aún no entrega papeles.'
+        },
+        {
+            key: 'policy_outside_age_range',
+            label: 'Fuera del rango de edad',
+            hint: 'Usa el rango de arriba; sin rango esta regla no se aplica.'
+        }
+    ];
+
+    addFee() {
+        this.tournament.fees = [...(this.tournament.fees ?? []), { code: '', name: '', amount: 0, mandatory: true }];
     }
 
-    removeExtraPrice(index: number) {
-        this.tournament.extra_prices = (this.tournament.extra_prices ?? []).filter((_, i) => i !== index);
+    removeFee(index: number) {
+        this.tournament.fees = (this.tournament.fees ?? []).filter((_, i) => i !== index);
+    }
+
+    /** Fills the visible name from the catalog the first time a code is picked. */
+    nameFee(fee: TournamentFeeRequest) {
+        if (!fee.name?.trim() && fee.code) {
+            fee.name = this.catalogService.label('fee_codes', fee.code);
+        }
+    }
+
+    /** Tells the organizer what authorising this rule will cost, if anything. */
+    feeHint(rule: EligibilityRuleKey): string {
+        const code = rule.replace('policy_', '');
+        const fee = (this.tournament.fees ?? []).find((f) => f.code === code);
+        if (!fee || !fee.amount) {
+            return 'Sin cargo. Agrega una línea al tarifario con este código para cobrarlo.';
+        }
+        return `Se cobrará ${fee.amount.toFixed(2)} ${this.tournament.currency ?? ''} al autorizarlo.`;
     }
 
     private load(id: number) {
@@ -482,7 +559,13 @@ export class TournamentManagement implements OnInit {
                 const data = res.data as TournamentResponse;
                 this.tournament = {
                     ...data,
-                    extra_prices: (data.extra_prices ?? []).map((extra) => ({ name: extra.name, amount: extra.amount }))
+                    currency: data.currency ?? 'GTQ',
+                    fees: (data.fees ?? []).map((fee) => ({
+                        code: fee.code,
+                        name: fee.name,
+                        amount: fee.amount,
+                        mandatory: fee.mandatory
+                    }))
                 };
                 this.startDate = data.start_date ? new Date(data.start_date) : undefined;
                 this.endDate = data.end_date ? new Date(data.end_date) : undefined;
@@ -514,7 +597,9 @@ export class TournamentManagement implements OnInit {
             tiebreakers: this.tiebreakerList.join(','),
             knockout_tiebreaks: this.knockoutTiebreakList.join(','),
             scheduling_day: Number(this.schedulingDay),
-            extra_prices: (this.tournament.extra_prices ?? []).filter((extra) => extra.name?.trim())
+            // A line with no code could never be charged, since the code is what a
+            // waiver and a payment look themselves up by.
+            fees: (this.tournament.fees ?? []).filter((fee) => fee.code?.trim())
         };
 
         this.saving.set(true);

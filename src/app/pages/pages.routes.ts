@@ -45,6 +45,11 @@ const MANAGEMENT: Routes = [
         data: { roles: ['manager', 'staff', 'admin'] }
     },
     {
+        path: 'clubs/:id/players',
+        loadComponent: () => import('./clubs/pool/pool').then((m) => m.ClubPool),
+        data: { roles: ['manager', 'staff', 'admin'] }
+    },
+    {
         path: 'teams',
         loadComponent: () => import('./teams/teams').then((m) => m.Teams),
         data: { roles: ['manager', 'staff', 'admin'] }
@@ -82,6 +87,11 @@ const MANAGEMENT: Routes = [
         path: 'fields',
         loadComponent: () => import('./fields/fields').then((m) => m.Fields),
         data: { roles: ['staff', 'admin'] }
+    },
+    {
+        path: 'waivers',
+        loadComponent: () => import('./waivers/waivers').then((m) => m.Waivers),
+        data: { roles: ['manager', 'staff', 'admin'] }
     },
     {
         path: 'suspensions',

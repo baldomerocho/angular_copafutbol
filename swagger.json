@@ -844,6 +844,235 @@
                 }
             }
         },
+        "/manager/clubs/{id}/players": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Everyone on the club's books, with the tournaments each is\ncurrently entered in.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clubs"
+                ],
+                "summary": "List the club's players",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Club ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Include people who left the club",
+                        "name": "include_inactive",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_ClubPlayerResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Puts someone on the club's books. Name an existing person by id or\ndocument, or supply the details to create them.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clubs"
+                ],
+                "summary": "Add a player to the club",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Club ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Player",
+                        "name": "player",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.ClubPlayerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_ClubPlayerResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/manager/clubs/{id}/players/copy/{team_id}": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Registers people from the club's books onto one of its teams. This\nis what a new season looks like: pick from the pool instead of\nretyping fifty players. Anyone the tournament's rules stop is\nreported back rather than silently skipped, and anyone who needs an\norganizer's authorisation is registered pending one.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clubs"
+                ],
+                "summary": "Enter club players into a tournament squad",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Club ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Team ID",
+                        "name": "team_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Players to enter",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.CopyPoolRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_CopyPoolResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/manager/clubs/{id}/players/{player_id}": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Change the club shirt number, position, or mark that they left.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clubs"
+                ],
+                "summary": "Update a club player",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Club ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "player_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Player",
+                        "name": "player",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.ClubPlayerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_ClubPlayerResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Removes them from the pool. Past tournament entries keep them, so\nno history is lost.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "clubs"
+                ],
+                "summary": "Take a player off the club's books",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Club ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "player_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-string"
+                        }
+                    }
+                }
+            }
+        },
         "/manager/dashboard": {
             "get": {
                 "security": [
@@ -1717,6 +1946,63 @@
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_PlayerResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/manager/waivers": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Requests to register a player the tournament's squad rules would\notherwise stop. Managers see only their own teams' requests.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "waivers"
+                ],
+                "summary": "List authorisation requests",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Filter by tournament",
+                        "name": "tournament_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Filter by team",
+                        "name": "team_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by status (pending, approved, rejected)",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Rows per page (max 200)",
+                        "name": "per_page",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_RegistrationWaiverResponse"
                         }
                     }
                 }
@@ -3741,6 +4027,96 @@
                     }
                 }
             }
+        },
+        "/staff/waivers/{id}/approve": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Authorises the registration. When the rate card charges for this\nrule the charge is raised as a pending payment, and whether the\nplayer can be fielded before it clears follows the tournament's own\nlate-payment rule — the same one that governs team enrollment.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "waivers"
+                ],
+                "summary": "Approve an authorisation request",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Request ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Resolution notes",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.RegistrationWaiverRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_RegistrationWaiverResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/waivers/{id}/reject": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Refuses the registration. The player stays on the squad list but\ncannot be fielded; removing them is the delegate's call.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "waivers"
+                ],
+                "summary": "Reject an authorisation request",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Request ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Resolution notes",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.RegistrationWaiverRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_RegistrationWaiverResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -3850,6 +4226,21 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.BracketRound"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_ClubPlayerResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.ClubPlayerResponse"
                     }
                 },
                 "message": {
@@ -3993,6 +4384,21 @@
                 "meta": {}
             }
         },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_RegistrationWaiverResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.RegistrationWaiverResponse"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
         "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-array_github_com_baldomerocho_copafutbol_internal_api_dtos_RosterEntryResponse": {
             "type": "object",
             "properties": {
@@ -4110,11 +4516,35 @@
                 "meta": {}
             }
         },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_ClubPlayerResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.ClubPlayerResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
         "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_ClubResponse": {
             "type": "object",
             "properties": {
                 "data": {
                     "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.ClubResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_CopyPoolResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.CopyPoolResponse"
                 },
                 "message": {
                     "type": "string"
@@ -4247,6 +4677,18 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerResponse"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {}
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.BaseResponse-github_com_baldomerocho_copafutbol_internal_api_dtos_RegistrationWaiverResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.RegistrationWaiverResponse"
                 },
                 "message": {
                     "type": "string"
@@ -4417,6 +4859,78 @@
                 }
             }
         },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.ClubPlayerRequest": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "birth_date": {
+                    "type": "string"
+                },
+                "document": {
+                    "type": "string",
+                    "example": "1234567890101"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Juan Pérez"
+                },
+                "number": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "phone": {
+                    "type": "string"
+                },
+                "photo_url": {
+                    "type": "string"
+                },
+                "player_id": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "position": {
+                    "type": "string",
+                    "example": "forward"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.ClubPlayerResponse": {
+            "type": "object",
+            "properties": {
+                "active": {
+                    "type": "boolean"
+                },
+                "club_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "number": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "player": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.PlayerResponse"
+                },
+                "player_id": {
+                    "type": "integer"
+                },
+                "position": {
+                    "type": "string",
+                    "example": "forward"
+                },
+                "registered_in": {
+                    "description": "RegisteredIn names the tournaments this person is currently entered in, so a\ndelegate can see at a glance who is already committed elsewhere.",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "github_com_baldomerocho_copafutbol_internal_api_dtos.ClubRequest": {
             "type": "object",
             "required": [
@@ -4489,6 +5003,61 @@
                     "items": {
                         "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TeamResponse"
                     }
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.CopyPoolRequest": {
+            "type": "object",
+            "properties": {
+                "player_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "reason": {
+                    "description": "Reason is carried onto any authorisation the entries turn out to need.",
+                    "type": "string",
+                    "example": "Plantilla de la temporada anterior"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.CopyPoolResponse": {
+            "type": "object",
+            "properties": {
+                "already_on": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "pending_approval": {
+                    "type": "integer",
+                    "example": 2
+                },
+                "registered": {
+                    "type": "integer",
+                    "example": 18
+                },
+                "skipped": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.CopyPoolSkip"
+                    }
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.CopyPoolSkip": {
+            "type": "object",
+            "properties": {
+                "player_id": {
+                    "type": "integer"
+                },
+                "player_name": {
+                    "type": "string",
+                    "example": "Juan Pérez"
+                },
+                "reason": {
+                    "type": "string",
+                    "example": "Ya está registrado con Deportivo Central Primera"
                 }
             }
         },
@@ -5291,6 +5860,90 @@
                 }
             }
         },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.RegistrationWaiverRequest": {
+            "type": "object",
+            "properties": {
+                "notes": {
+                    "type": "string",
+                    "example": "Autorizado por la comisión"
+                },
+                "reason": {
+                    "type": "string",
+                    "example": "Es el único portero disponible"
+                }
+            }
+        },
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.RegistrationWaiverResponse": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "GTQ"
+                },
+                "detail": {
+                    "type": "string"
+                },
+                "fee_amount": {
+                    "type": "number",
+                    "example": 50
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "payment_id": {
+                    "type": "integer"
+                },
+                "payment_status": {
+                    "type": "string",
+                    "example": "pending"
+                },
+                "player_id": {
+                    "type": "integer"
+                },
+                "player_name": {
+                    "type": "string",
+                    "example": "Juan Pérez"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "resolved_at": {
+                    "type": "string"
+                },
+                "rule": {
+                    "type": "string",
+                    "example": "other_active_tournament"
+                },
+                "status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.WaiverStatus"
+                        }
+                    ],
+                    "example": "pending"
+                },
+                "team_id": {
+                    "type": "integer"
+                },
+                "team_name": {
+                    "type": "string",
+                    "example": "Deportivo Central Primera"
+                },
+                "tournament_id": {
+                    "type": "integer"
+                },
+                "tournament_name": {
+                    "type": "string",
+                    "example": "Copa Apertura"
+                }
+            }
+        },
         "github_com_baldomerocho_copafutbol_internal_api_dtos.RosterEntryRequest": {
             "type": "object",
             "required": [
@@ -5326,6 +5979,11 @@
                 "position": {
                     "type": "string",
                     "example": "forward"
+                },
+                "reason": {
+                    "description": "Reason justifies the registration when a squad rule needs an organizer's\nauthorisation. Ignored when nothing needs authorising.",
+                    "type": "string",
+                    "example": "Es el único portero disponible"
                 }
             }
         },
@@ -5338,6 +5996,10 @@
                 "division": {
                     "type": "string",
                     "example": "Primera"
+                },
+                "eligible": {
+                    "description": "Eligible is false while an authorisation is pending or its fee unpaid. The\nplayer is on the list but cannot be fielded.",
+                    "type": "boolean"
                 },
                 "id": {
                     "type": "integer"
@@ -5368,6 +6030,15 @@
                 "team_name": {
                     "type": "string",
                     "example": "Deportivo Central"
+                },
+                "waiver_rule": {
+                    "type": "string",
+                    "example": "other_active_tournament"
+                },
+                "waiver_status": {
+                    "description": "WaiverStatus is set when the entry needed an authorisation, so the squad\nscreen can explain why someone cannot play yet.",
+                    "type": "string",
+                    "example": "pending"
                 }
             }
         },
@@ -5680,33 +6351,49 @@
                 }
             }
         },
-        "github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentExtraPriceRequest": {
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentFeeRequest": {
             "type": "object",
             "properties": {
                 "amount": {
                     "type": "number",
                     "example": 25.5
                 },
+                "code": {
+                    "type": "string",
+                    "example": "uniform"
+                },
+                "mandatory": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "name": {
                     "type": "string",
-                    "example": "Uniform Fee"
+                    "example": "Uniforme"
                 }
             }
         },
-        "github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentExtraPriceResponse": {
+        "github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentFeeResponse": {
             "type": "object",
             "properties": {
                 "amount": {
                     "type": "number",
                     "example": 25.5
+                },
+                "code": {
+                    "type": "string",
+                    "example": "uniform"
                 },
                 "id": {
                     "type": "integer",
                     "example": 1
                 },
+                "mandatory": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "name": {
                     "type": "string",
-                    "example": "Uniform Fee"
+                    "example": "Uniforme"
                 }
             }
         },
@@ -5766,6 +6453,10 @@
                     "type": "boolean",
                     "example": true
                 },
+                "currency": {
+                    "type": "string",
+                    "example": "GTQ"
+                },
                 "days_between_rounds": {
                     "type": "integer",
                     "example": 7
@@ -5786,12 +6477,6 @@
                     "type": "number",
                     "example": 150
                 },
-                "extra_prices": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentExtraPriceRequest"
-                    }
-                },
                 "fair_play_enabled": {
                     "type": "boolean",
                     "example": true
@@ -5803,6 +6488,12 @@
                 "fair_play_yellow_penalty": {
                     "type": "integer",
                     "example": 1
+                },
+                "fees": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentFeeRequest"
+                    }
                 },
                 "knockout_legs": {
                     "type": "integer",
@@ -5864,6 +6555,39 @@
                     "type": "integer",
                     "example": 3
                 },
+                "policy_missing_document": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.EligibilityPolicy"
+                        }
+                    ],
+                    "example": "allowed"
+                },
+                "policy_other_active_tournament": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.EligibilityPolicy"
+                        }
+                    ],
+                    "example": "allowed"
+                },
+                "policy_other_team_same_tournament": {
+                    "description": "Eligibility policies: allowed, requires_approval or blocked.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.EligibilityPolicy"
+                        }
+                    ],
+                    "example": "blocked"
+                },
+                "policy_outside_age_range": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.EligibilityPolicy"
+                        }
+                    ],
+                    "example": "blocked"
+                },
                 "red_suspension_games": {
                     "type": "integer",
                     "example": 1
@@ -5871,10 +6595,6 @@
                 "registration_open": {
                     "type": "boolean",
                     "example": true
-                },
-                "require_player_document": {
-                    "type": "boolean",
-                    "example": false
                 },
                 "scheduling_day": {
                     "type": "integer",
@@ -5920,10 +6640,6 @@
                     ],
                     "example": "league"
                 },
-                "unique_player_per_tournament": {
-                    "type": "boolean",
-                    "example": true
-                },
                 "yellow_card_threshold": {
                     "type": "integer",
                     "example": 3
@@ -5946,6 +6662,10 @@
                 "created_at": {
                     "type": "string"
                 },
+                "currency": {
+                    "type": "string",
+                    "example": "GTQ"
+                },
                 "days_between_rounds": {
                     "type": "integer"
                 },
@@ -5964,12 +6684,6 @@
                     "type": "number",
                     "example": 150
                 },
-                "extra_prices": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentExtraPriceResponse"
-                    }
-                },
                 "fair_play_enabled": {
                     "type": "boolean"
                 },
@@ -5978,6 +6692,12 @@
                 },
                 "fair_play_yellow_penalty": {
                     "type": "integer"
+                },
+                "fees": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_api_dtos.TournamentFeeResponse"
+                    }
                 },
                 "id": {
                     "type": "integer",
@@ -6031,13 +6751,22 @@
                 "points_win": {
                     "type": "integer"
                 },
+                "policy_missing_document": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.EligibilityPolicy"
+                },
+                "policy_other_active_tournament": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.EligibilityPolicy"
+                },
+                "policy_other_team_same_tournament": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.EligibilityPolicy"
+                },
+                "policy_outside_age_range": {
+                    "$ref": "#/definitions/github_com_baldomerocho_copafutbol_internal_models.EligibilityPolicy"
+                },
                 "red_suspension_games": {
                     "type": "integer"
                 },
                 "registration_open": {
-                    "type": "boolean"
-                },
-                "require_player_document": {
                     "type": "boolean"
                 },
                 "scheduling_day": {
@@ -6081,9 +6810,6 @@
                         }
                     ],
                     "example": "league"
-                },
-                "unique_player_per_tournament": {
-                    "type": "boolean"
                 },
                 "yellow_card_threshold": {
                     "type": "integer"
@@ -6206,6 +6932,19 @@
                 }
             }
         },
+        "github_com_baldomerocho_copafutbol_internal_models.EligibilityPolicy": {
+            "type": "string",
+            "enum": [
+                "allowed",
+                "requires_approval",
+                "blocked"
+            ],
+            "x-enum-varnames": [
+                "PolicyAllowed",
+                "PolicyRequiresApproval",
+                "PolicyBlocked"
+            ]
+        },
         "github_com_baldomerocho_copafutbol_internal_models.MatchEventType": {
             "type": "string",
             "enum": [
@@ -6269,11 +7008,13 @@
             "type": "string",
             "enum": [
                 "enrollment",
+                "waiver",
                 "extra",
                 "fine"
             ],
             "x-enum-varnames": [
                 "PaymentTypeEnrollment",
+                "PaymentTypeWaiver",
                 "PaymentTypeExtra",
                 "PaymentTypeFine"
             ]
@@ -6319,6 +7060,19 @@
                 "RoleAdmin",
                 "RoleStaff",
                 "RoleManager"
+            ]
+        },
+        "github_com_baldomerocho_copafutbol_internal_models.WaiverStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "approved",
+                "rejected"
+            ],
+            "x-enum-varnames": [
+                "WaiverPending",
+                "WaiverApproved",
+                "WaiverRejected"
             ]
         },
         "internal_api_handlers.LoginRequest": {

@@ -18,7 +18,7 @@ import { ToolbarModule } from 'primeng/toolbar';
 import { TooltipModule } from 'primeng/tooltip';
 import { AuthService } from '../service/auth.service';
 import { TeamResponse } from '../service/interfaces/team.interface';
-import { TournamentResponse } from '../service/interfaces/tournament.interface';
+import { TournamentFeeResponse, TournamentResponse } from '../service/interfaces/tournament.interface';
 import { TeamService } from '../service/team.service';
 import { TournamentService } from '../service/tournament.service';
 import { ServerTable } from '../shared/server-table';
@@ -144,17 +144,17 @@ import { ServerTable } from '../shared/server-table';
                     <div class="border border-surface rounded-border p-3 text-sm">
                         <div class="flex justify-between py-1">
                             <span class="text-muted-color">Inscripción</span>
-                            <span class="tabular-nums">{{ tournament.enrollment_price | currency: 'USD' }}</span>
+                            <span class="tabular-nums">{{ money(tournament.enrollment_price ?? 0, tournament) }}</span>
                         </div>
-                        @for (extra of tournament.extra_prices ?? []; track extra.id) {
+                        @for (fee of mandatoryFees(tournament); track fee.code) {
                             <div class="flex justify-between py-1">
-                                <span class="text-muted-color">{{ extra.name }}</span>
-                                <span class="tabular-nums">{{ extra.amount | currency: 'USD' }}</span>
+                                <span class="text-muted-color">{{ fee.name }}</span>
+                                <span class="tabular-nums">{{ money(fee.amount, tournament) }}</span>
                             </div>
                         }
                         <div class="flex justify-between py-1 border-t border-surface mt-1 pt-2 font-semibold">
                             <span>Total</span>
-                            <span class="tabular-nums">{{ enrollTotal() | currency: 'USD' }}</span>
+                            <span class="tabular-nums">{{ money(enrollTotal(), tournament) }}</span>
                         </div>
                     </div>
 
@@ -223,10 +223,23 @@ export class Teams implements OnInit {
         return this.tournaments().find((t) => t.id === this.enrollTournamentId);
     }
 
+    /** Only the mandatory lines are owed to enter; the rest are charged if they apply. */
+    mandatoryFees(tournament: TournamentResponse): TournamentFeeResponse[] {
+        return (tournament.fees ?? []).filter((fee) => fee.mandatory);
+    }
+
     enrollTotal(): number {
         const tournament = this.selectedTournament();
         if (!tournament) return 0;
-        return (tournament.enrollment_price ?? 0) + (tournament.extra_prices ?? []).reduce((sum, e) => sum + e.amount, 0);
+        return (
+            (tournament.enrollment_price ?? 0) +
+            this.mandatoryFees(tournament).reduce((sum, fee) => sum + fee.amount, 0)
+        );
+    }
+
+    /** Amounts belong to the tournament's own currency, not the platform's. */
+    money(amount: number, tournament: TournamentResponse): string {
+        return `${tournament.currency ?? ''} ${(amount ?? 0).toFixed(2)}`.trim();
     }
 
     openEnroll(team: TeamResponse) {

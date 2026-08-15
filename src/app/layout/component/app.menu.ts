@@ -45,6 +45,7 @@ export class AppMenu implements OnInit {
                     { label: 'Clubes', icon: 'pi pi-fw pi-building', routerLink: ['/pages/clubs'] },
                     { label: 'Equipos', icon: 'pi pi-fw pi-users', routerLink: ['/pages/teams'] },
                     { label: 'Partidos', icon: 'pi pi-fw pi-calendar', routerLink: ['/pages/matches'] },
+                    { label: 'Solicitudes', icon: 'pi pi-fw pi-inbox', routerLink: ['/pages/waivers'] },
                     { label: 'Sanciones', icon: 'pi pi-fw pi-ban', routerLink: ['/pages/suspensions'], roles: ['staff', 'admin'] },
                     { label: 'Sedes', icon: 'pi pi-fw pi-map-marker', routerLink: ['/pages/fields'], roles: ['staff', 'admin'] }
                 ]

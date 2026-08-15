@@ -26,6 +26,11 @@ export interface CatalogsResponse {
     lineup_positions: SimpleRelation[];
     player_positions: SimpleRelation[];
     team_divisions: SimpleRelation[];
+    eligibility_policies: SimpleRelation[];
+    eligibility_rules: SimpleRelation[];
+    waiver_statuses: SimpleRelation[];
+    currencies: SimpleRelation[];
+    fee_codes: SimpleRelation[];
     weekdays: SimpleRelation[];
 }
 

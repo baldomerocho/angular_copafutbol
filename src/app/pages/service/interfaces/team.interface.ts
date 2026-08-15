@@ -77,6 +77,39 @@ export interface PlayerRequest {
 }
 
 /** A roster entry: this person wears this number for this squad. */
+/** Someone on the club's books — the pool a tournament entry is drawn from. */
+export interface ClubPlayerResponse {
+    id: number;
+    club_id: number;
+    player_id: number;
+    player: PlayerResponse;
+    position?: string;
+    number: number;
+    active: boolean;
+    /** Tournaments this person is currently entered in. */
+    registered_in: string[];
+}
+
+export interface ClubPlayerRequest {
+    player_id?: number;
+    name?: string;
+    document?: string;
+    birth_date?: string | null;
+    position?: string;
+    number?: number;
+    photo_url?: string;
+    phone?: string;
+    active?: boolean;
+}
+
+/** What entering the club's players into a tournament squad did. */
+export interface CopyPoolResponse {
+    registered: number;
+    pending_approval: number;
+    already_on: number;
+    skipped: { player_id: number; player_name: string; reason: string }[];
+}
+
 export interface RosterEntryResponse {
     id: number;
     team_id: number;
@@ -90,6 +123,11 @@ export interface RosterEntryResponse {
     is_captain: boolean;
     active: boolean;
     suspended: boolean;
+    /** False while an authorisation is pending, or approved but unpaid. */
+    eligible: boolean;
+    /** Set when the entry needed an authorisation, so the squad list can say why. */
+    waiver_status?: 'pending' | 'approved' | 'rejected';
+    waiver_rule?: string;
 }
 
 /**
@@ -98,6 +136,8 @@ export interface RosterEntryResponse {
  * decides whether the person already exists.
  */
 export interface RosterEntryRequest {
+    /** Justification carried onto any authorisation the registration needs. */
+    reason?: string;
     player_id?: number;
     name?: string;
     document?: string;
